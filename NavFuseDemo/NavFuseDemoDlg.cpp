@@ -136,7 +136,7 @@ void CNavFuseDemoDlg::OnPaint()
 		GetClientRect(&rect);
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
-
+		int z
 		// 绘制图标
 		dc.DrawIcon(x, y, m_hIcon);
 	}

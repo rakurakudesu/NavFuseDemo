@@ -1,11 +1,11 @@
-#ifndef MOTIONMODEL_H
-#define MOTIONMODEL_H
-
 /**
- * @file MotionModel.h
+ * @file CMotionModel.h
  * @brief 机器人运动模拟类，生成无噪声的真实位置数据（直线/圆周/S型曲线）
  * @note 对应PPT“基本要求-1. 3种运动方式选择”，为传感器模拟提供基准位置
  */
+#ifndef CMOTIONMODEL_H
+#define CMOTIONMODEL_H
+
 class CMotionModel {
 public:
     /**
@@ -32,6 +32,14 @@ public:
      * @调用场景：实例销毁时（如对话框关闭）
      */
     ~CMotionModel();
+
+    /**
+     * @brief 获取当前实例的指针（新增函数）
+     * @return CMotionModel*：当前对象的指针
+     * @调用场景：外部类需要直接访问当前实例时使用
+     * @注意：指针有效期与当前实例一致，实例销毁后指针失效
+     */
+    CMotionModel* GetInstancePtr() { return this; }
 
     /**
      * @brief 设置运动类型及对应参数（核心配置接口）
@@ -66,7 +74,6 @@ public:
      */
     void GetTruePos(double& x, double& y);
 
-private:
     MotionType m_type;    ///< 当前运动类型（LINE/ARC/S_CURVE）
     double m_time;        ///< 运动累计时间(s)，用于计算位置
     double m_x;           ///< 真实X坐标(m)
@@ -77,5 +84,4 @@ private:
     double m_lineSpeed;   ///< 直线运动速度(m/s)（仅LINE类型使用）
 };
 
-#endif // MOTIONMODEL_H
-
+#endif // CMOTIONMODEL_H

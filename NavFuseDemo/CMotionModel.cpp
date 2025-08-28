@@ -32,12 +32,10 @@ void CMotionModel::SetMotionParam(MotionType type, double param1, double param2)
         m_lineSpeed = param1;  // param1 = 速度(m/s)
         // 直线运动不需要param2，忽略
         break;
-
     case ARC:
         m_radius = param1;     // param1 = 半径(m)
         m_omega = param2;      // param2 = 角速度(rad/s)
         break;
-
     case S_CURVE:
         m_sAmp = param1;       // param1 = 振幅(m)
         // S型曲线不需要param2，忽略

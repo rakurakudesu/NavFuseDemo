@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "NavFuseDemo.h"
 #include "CNavFuseDemoView.h"
-
+#include "CMotionModel.h"
 
 // CNavFuseDemoView
 
@@ -28,10 +28,13 @@ END_MESSAGE_MAP()
 void CNavFuseDemoView::OnDraw(CDC* pDC)
 {
 	CDocument* pDoc = GetDocument();
+	CMotionModel mot;
+	mot.SetMotionParam(CMotionModel::LINE, 100);
+	mot.UpdateTruePos(100.0);
 	// TODO:  在此添加绘制代码
 	CPen Red_pen(PS_SOLID, 3, RGB(255, 0, 0));
 	CPen* Old_pen = pDC->SelectObject(&Red_pen);
-	pDC->LineTo(100, 100);
+	pDC->LineTo(mot.m_x, mot.m_y);
 }
 
 

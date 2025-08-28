@@ -1,11 +1,11 @@
 #include "pch.h"
 #include "CSensor.h"
-void SetParam(double freq, double acc) {
+void CSensor::SetParam(double freq, double acc) {
 	m_freq = freq;
 	m_acc = acc;
 	m_noiseSigma = sqrt(acc); // 精度→噪声标准差的转换（符合高斯分布定义）
 }
-double GenerateGaussNoise()
+double CSensor:: GenerateGaussNoise()
 {
     std::normal_distribution<double> dist(0.0, m_noiseSigma); // 正态分布：均值0，标准差σ
     return dist(m_gen); // 生成噪声值

@@ -37,6 +37,13 @@ public:
      * @调用场景：对话框“开始”按钮点击时，读取界面参数后调用
      * @设计思路：精度acc对应噪声标准差σ=sqrt(acc)，统一参数入口
      */
+public:
+    double m_freq;       ///< 传感器刷新频率(Hz)
+    double m_acc;        ///< 传感器精度(m)
+    double m_noiseSigma; ///< 噪声标准差（σ=sqrt(acc)，符合高斯分布N(0,σ²)）
+    double m_lastTime;   ///< 上一次生成数据的时间(s)，控制刷新间隔
+    std::random_device m_rd; ///< 随机数种子（用于生成高斯噪声）
+    std::mt19937 m_gen;  ///< 随机数生成器（C++11，确保噪声随机性）
     void SetParam(double freq, double acc);
 
     /**
@@ -51,14 +58,6 @@ public:
      * @设计思路：按刷新频率控制数据生成，子类实现GPS/INS的差异化噪声逻辑
      */
     virtual bool GenerateData(double currentTime, double trueX, double trueY, double& simX, double& simY) = 0;
-
-protected:
-    double m_freq;       ///< 传感器刷新频率(Hz)
-    double m_acc;        ///< 传感器精度(m)
-    double m_noiseSigma; ///< 噪声标准差（σ=sqrt(acc)，符合高斯分布N(0,σ²)）
-    double m_lastTime;   ///< 上一次生成数据的时间(s)，控制刷新间隔
-    std::random_device m_rd; ///< 随机数种子（用于生成高斯噪声）
-    std::mt19937 m_gen;  ///< 随机数生成器（C++11，确保噪声随机性）
 
     /**
      * @brief 生成高斯噪声（保护接口，仅子类调用）
@@ -140,7 +139,7 @@ public:
      */
     bool GenerateData(double currentTime, double trueX, double trueY, double& simX, double& simY) override;
 
-private:
+public:
     double m_driftX;     ///< X方向累积漂移量(m)
     double m_driftY;     ///< Y方向累积漂移量(m)
     double m_driftRate;  ///< 漂移率(m/s)（可调整，默认0.01m/s）

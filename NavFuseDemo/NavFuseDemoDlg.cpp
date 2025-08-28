@@ -124,6 +124,9 @@ BOOL CNavFuseDemoDlg::OnInitDialog()
 		this,               // 父窗口：对话框本身
 		ID                  // 视图的ID（与容器控件ID一致，避免冲突）
 	);
+	if (bCreate) {
+		m_pview->OnInitialUpdate(); // 触发视图的初始化逻辑
+	}
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 

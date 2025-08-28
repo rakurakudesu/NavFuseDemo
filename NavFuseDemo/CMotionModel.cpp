@@ -60,19 +60,19 @@ void CMotionModel::UpdateTruePos(double dt)
     case LINE:
         // 直线运动：x = 速度 * 累计时间，y保持0
         m_x = m_lineSpeed * m_time;
-        m_y = 0.0;
+        m_y = 300.0;
         break;
 
     case ARC:
         // 圆周运动：x = 半径 * cos(角速度 * 时间)，y = 半径 * sin(角速度 * 时间)
-        m_x = m_radius * cos(m_omega * m_time);
-        m_y = m_radius * sin(m_omega * m_time);
+        m_x = 300+m_radius * cos(m_omega * m_time);
+        m_y = 300+m_radius * sin(m_omega * m_time);
         break;
 
     case S_CURVE:
         // S型曲线：x随时间线性增加，y按正弦曲线变化
-        m_x = m_time;  // x方向匀速运动
-        m_y = m_sAmp * sin(m_time);  // y方向正弦曲线
+        m_x = m_time*20;  // x方向匀速运动
+        m_y = 300+m_sAmp * sin(m_time);  // y方向正弦曲线
         break;
     }
 }

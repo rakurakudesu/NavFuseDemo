@@ -18,7 +18,7 @@ public:
      * @调用场景：CGPS/CINS子类构造时隐式调用
      * @设计思路：默认频率1Hz、精度1m（噪声σ=1），上次生成时间0s（未启动）
      */
-    CSensor();
+    CSensor() {}
 
     /**
      * @brief 析构函数：确保子类析构时正确释放（多态基类必加）
@@ -27,7 +27,7 @@ public:
      * @调用场景：传感器实例销毁时（如对话框关闭）
      * @设计思路：避免子类资源泄漏，符合C++多态规范
      */
-    virtual ~CSensor();
+    virtual ~CSensor() {}
 
     /**
      * @brief 设置传感器核心参数（配置接口）
@@ -81,14 +81,14 @@ public:
      * @return 无
      * @调用场景：对话框类CNavFuseDemoDlg初始化时创建实例
      */
-    CGPS();
+    CGPS() {}
 
     /**
      * @brief 析构函数：释放GPS资源（当前无动态资源）
      * @param 无
      * @return 无
      */
-    ~CGPS();
+    ~CGPS() {}
 
     /**
      * @brief 重写生成GPS模拟数据（无漂移，仅加高斯噪声）
@@ -117,14 +117,14 @@ public:
      * @调用场景：对话框类CNavFuseDemoDlg初始化时创建实例
      * @设计思路：默认漂移率0.01m/s（每100ms漂移0.001m），初始漂移量0
      */
-    CINS();
+    CINS() {}
 
     /**
      * @brief 析构函数：释放INS资源（当前无动态资源）
      * @param 无
      * @return 无
      */
-    ~CINS();
+    ~CINS() {}
 
     /**
      * @brief 重写生成INS模拟数据（高斯噪声+累积漂移）

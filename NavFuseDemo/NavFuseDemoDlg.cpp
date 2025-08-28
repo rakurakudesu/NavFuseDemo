@@ -7,6 +7,7 @@
 #include "NavFuseDemo.h"
 #include "NavFuseDemoDlg.h"
 #include "afxdialogex.h"
+#include "CNavFuseDemoView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -47,8 +48,6 @@ END_MESSAGE_MAP()
 
 
 // CNavFuseDemoDlg 对话框
-
-
 
 CNavFuseDemoDlg::CNavFuseDemoDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_NAVFUSEDEMO_DIALOG, pParent)
@@ -100,7 +99,30 @@ BOOL CNavFuseDemoDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+	// 1. 获取IDC_DRAW控件的位置（作为视图的大小和坐标）
+	UINT ID = IDC_DRAW;
+	CWnd* pWnd = this->GetDlgItem(ID);  // 获取静态文本控件的窗口指针
+	if (pWnd == NULL) return FALSE;     // 容错：若控件不存在，初始化失败
 
+	CRect Rect;
+	pWnd->GetWindowRect(Rect);          // 获取控件在屏幕上的坐标
+	this->ScreenToClient(Rect);         // 转换为对话框的客户区坐标（关键：避免位置偏移）
+
+	// 2. 动态创建CNavFuseDemoView实例
+	CNavFuseDemoView* m_pview = (CNavFuseDemoView*)RUNTIME_CLASS(CNavFuseDemoView)->CreateObject();
+	if (NULL == m_pview) return FALSE;  // 容错：若创建失败，初始化失败
+
+	// 3. 创建视图窗口（嵌入到对话框中）
+	// 补充WS_CHILD（子窗口）和WS_VISIBLE（创建后显示），否则视图不显示
+	DWORD dwStyle = AFX_WS_DEFAULT_VIEW | WS_CHILD | WS_VISIBLE;
+	BOOL bCreate = m_pview->Create(
+		NULL,               // 类名：使用默认视图类名
+		NULL,               // 窗口标题：无需标题
+		dwStyle,            // 窗口样式（关键：子窗口+可见）
+		Rect,               // 视图的位置和大小（来自IDC_DRAW）
+		this,               // 父窗口：对话框本身
+		ID                  // 视图的ID（与容器控件ID一致，避免冲突）
+	);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -136,7 +158,6 @@ void CNavFuseDemoDlg::OnPaint()
 		GetClientRect(&rect);
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
-		int z
 		// 绘制图标
 		dc.DrawIcon(x, y, m_hIcon);
 	}

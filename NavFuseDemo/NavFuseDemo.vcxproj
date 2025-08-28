@@ -188,6 +188,7 @@
     <ClInclude Include="CDataFusion.h" />
     <ClInclude Include="CKalmanFilter.h" />
     <ClInclude Include="CMotionModel.h" />
+    <ClInclude Include="CNavFuseDemoView.h" />
     <ClInclude Include="COscilloscope.h" />
     <ClInclude Include="CSensor.h" />
     <ClInclude Include="framework.h" />
@@ -202,6 +203,7 @@
     <ClCompile Include="CDataFusion.cpp" />
     <ClCompile Include="CKalmanFilter.cpp" />
     <ClCompile Include="CMotionModel.cpp" />
+    <ClCompile Include="CNavFuseDemoView.cpp" />
     <ClCompile Include="COscilloscope.cpp" />
     <ClCompile Include="CSensor.cpp" />
     <ClCompile Include="NavFuseDemo.cpp" />

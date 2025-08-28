@@ -64,6 +64,7 @@ BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BUTTON3, &CNavFuseDemoDlg::OnBnClickedButton3)
 END_MESSAGE_MAP()
 
 
@@ -174,3 +175,9 @@ HCURSOR CNavFuseDemoDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CNavFuseDemoDlg::OnBnClickedButton3()
+{
+	// TODO: 在此添加控件通知处理程序代码
+}

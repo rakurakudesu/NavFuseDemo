@@ -22,20 +22,19 @@ CNavFuseDemoView::~CNavFuseDemoView()
 BEGIN_MESSAGE_MAP(CNavFuseDemoView, CView)
 END_MESSAGE_MAP()
 
-
 // CNavFuseDemoView 绘图
-
 void CNavFuseDemoView::OnDraw(CDC* pDC)
 {
 	CDocument* pDoc = GetDocument();
-	CMotionModel mot;
-	mot.SetMotionParam(CMotionModel::LINE, 100);
-	mot.UpdateTruePos(100.0);
+	CMotionModel m_mot;
+	m_mot.SetMotionParam(CMotionModel::LINE, 100);
+	m_mot.UpdateTruePos(1.0);
 	// TODO:  在此添加绘制代码
 	CPen Red_pen(PS_SOLID, 3, RGB(255, 0, 0));
 	CPen* Old_pen = pDC->SelectObject(&Red_pen);
-	pDC->LineTo(mot.m_x, mot.m_y);
+	pDC->LineTo(m_mot.m_x, m_mot.m_y+100);
 }
+
 
 
 // CNavFuseDemoView 诊断

@@ -8,6 +8,7 @@
 #include "NavFuseDemoDlg.h"
 #include "afxdialogex.h"
 #include "CNavFuseDemoView.h"
+#include "CMotionModel.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -64,6 +65,7 @@ BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BUTTON2, &CNavFuseDemoDlg::OnBnClickedButton2)
 END_MESSAGE_MAP()
 
 
@@ -174,3 +176,9 @@ HCURSOR CNavFuseDemoDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+void CNavFuseDemoDlg::OnBnClickedButton2()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	//m_mot.UpdateTruePos(1.0);
+}

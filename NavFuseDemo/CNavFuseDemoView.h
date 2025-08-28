@@ -2,7 +2,6 @@
 
 
 // CNavFuseDemoView 视图
-
 class CNavFuseDemoView : public CView
 {
 	DECLARE_DYNCREATE(CNavFuseDemoView)

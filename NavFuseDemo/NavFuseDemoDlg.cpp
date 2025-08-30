@@ -55,6 +55,7 @@ CNavFuseDemoDlg::CNavFuseDemoDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_NAVFUSEDEMO_DIALOG, pParent)
 	, Timer_speed(50)
 	, is_GPS(FALSE)
+	, is_INS(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -63,7 +64,8 @@ void CNavFuseDemoDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Text(pDX, EDITSpeed, Timer_speed);
-	DDX_Radio(pDX, RADIO_GPS, is_GPS);
+	DDX_Check(pDX, CHECK_GPS, is_GPS);
+	DDX_Check(pDX, CHECK_INS, is_INS);
 }
 
 BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
@@ -75,7 +77,9 @@ BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
 	ON_BN_CLICKED(RADIO_S_CURVE, &CNavFuseDemoDlg::OnBnClickedSCurve)
 	ON_STN_CLICKED(IDC_DRAW, &CNavFuseDemoDlg::OnStnClickedDraw)
 	ON_EN_CHANGE(EDITSpeed, &CNavFuseDemoDlg::OnEnChangeEditspeed)
-	ON_BN_CLICKED(RADIO_GPS, &CNavFuseDemoDlg::OnBnClickedGps)
+
+	ON_BN_CLICKED(CHECK_GPS, &CNavFuseDemoDlg::OnBnClickedGps)
+	ON_BN_CLICKED(CHECK_INS, &CNavFuseDemoDlg::OnBnClickedIns)
 END_MESSAGE_MAP()
 
 
@@ -241,15 +245,15 @@ void CNavFuseDemoDlg::OnEnChangeEditspeed()
 void CNavFuseDemoDlg::OnBnClickedGps()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	UpdateData(TRUE);
-	if(is_GPS == true)
-	{
-		is_GPS = false;
-		UpdateData(FALSE);
-	}
-	else
-	{
-		is_GPS = true;
-		UpdateData(FALSE);
-	}
+	is_GPS = !is_GPS; 
+	m_pview->ResetTrace();
+	UpdateData(FALSE); 
+}
+
+void CNavFuseDemoDlg::OnBnClickedIns()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	is_INS = !is_INS;
+	m_pview->ResetTrace();
+	UpdateData(FALSE);
 }

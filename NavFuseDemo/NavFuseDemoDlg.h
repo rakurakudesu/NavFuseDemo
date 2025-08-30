@@ -39,6 +39,8 @@ public:
 	int Timer_speed=50;
 	afx_msg void OnEnChangeEditspeed();
 	BOOL is_GPS;
+	BOOL is_INS;
 	afx_msg void OnBnClickedGps();
+	afx_msg void OnBnClickedIns();
 };
 

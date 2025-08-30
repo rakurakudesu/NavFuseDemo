@@ -101,7 +101,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
         pDC->SelectObject(pGpsOldBrush);
     }
     // 绘制INS连续轨迹
-    if (!m_insTracePoints.empty())
+    if (!m_insTracePoints.empty() && pDlg->is_INS)
     {
         // 设置INS画笔（青色，1px宽，与真实轨迹区分）
         CPen insPen(PS_SOLID, 2, RGB(100, 150, 100));  

@@ -30,8 +30,8 @@
 #define RADIO_ARC                       1006
 #define RADIO_S_CURVE                   1007
 #define EDITSpeed                       1008
-#define IDC_RADIO4                      1009
-#define RADIO_GPS                       1009
+#define CHECK_GPS                       1012
+#define CHECK_INS                       1013
 #define AFX_IDC_COLOR_BLACK             1100
 #define AFX_IDC_COLOR_WHITE             1101
 #define AFX_IDC_COLOR_RED               1102
@@ -532,7 +532,6 @@
 #define AFX_IDP_E_CANTSAVEFILETOTEMP    0xFEC5
 #define AFX_IDP_E_SEARCHTEXTNOTFOUND    0xFEC6
 #define AFX_IDP_E_REPLACEMENTSTOOLONG   0xFEC7
-#define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 
@@ -540,7 +539,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1010
+#define _APS_NEXT_CONTROL_VALUE         1014
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

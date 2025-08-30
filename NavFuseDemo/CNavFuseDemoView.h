@@ -14,7 +14,6 @@ public:
 	virtual void OnDraw(CDC* pDC);      // 重写以绘制该视图
 	virtual void OnInitialUpdate();
 
-	void ClearTrace();  //清空轨迹
 	void ResetTrace();  //重置轨迹
 
 	double m_lastX = 0.0;  // 上一帧X坐标

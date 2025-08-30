@@ -84,7 +84,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
         CBrush gpsBrush(RGB(0, 0, 255)); // 填充蓝色
         CBrush* pGpsOldBrush = pDC->SelectObject(&gpsBrush);
 
-        // 遍历所有GPS点，逐个绘制圆点（半径2px，视觉上更像点）
+        // 遍历所有GPS点，逐个绘制圆点
         for (const auto& gpsPoint : m_gpsTracePoints)
         {
             // 绘制圆点：以gpsPoint为中心，宽高4px（半径2px）的椭圆

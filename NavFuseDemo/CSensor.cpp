@@ -3,7 +3,7 @@
 void CSensor::SetParam(double freq, double acc) {
 	m_freq = freq;
 	m_acc = acc;
-	m_noiseSigma = sqrt(acc); // 精度→噪声标准差的转换（符合高斯分布定义）
+	m_noiseSigma = sqrt(acc); // 精度→噪声标准差的转换
 }
 double CSensor:: GenerateGaussNoise()
 {
@@ -17,24 +17,26 @@ bool CGPS::GenerateData(double currentTime, double trueX, double trueY, double& 
     }
     // 2. 更新上次生成时间
     m_lastTime = currentTime;
-    // 3. 叠加高斯噪声（无漂移）
+  
     simX = trueX + GenerateGaussNoise();
     simY = trueY + GenerateGaussNoise();
-    return true; // 新数据有效
+    return true; 
 }
 bool CINS::GenerateData(double currentTime, double trueX, double trueY, double& simX, double& simY) {
-    // 1. 检查是否达到刷新频率
     double timeDelta = currentTime - m_lastTime;
     if (timeDelta < 1.0 / m_freq) {
         return false;
     }
-    // 2. 计算漂移增量（随时间累积）
-    double driftDelta = m_driftRate * timeDelta;
-    m_driftX += driftDelta; // X方向漂移累积
-    m_driftY += driftDelta; // Y方向漂移累积（可扩展为独立漂移率）
-    // 3. 更新上次生成时间
+
+    // 漂移增量 = 固定漂移率分量 + 随机波动分量
+    double fixedDrift = m_driftRate * timeDelta; // 系统性漂移
+    double randomDrift = GenerateGaussNoise() * 0.05; // 随机漂移
+    double driftDelta = fixedDrift + randomDrift;
+
+    m_driftX += driftDelta;
+    m_driftY += driftDelta; 
+
     m_lastTime = currentTime;
-    // 4. 叠加噪声 + 累积漂移
     simX = trueX + GenerateGaussNoise() + m_driftX;
     simY = trueY + GenerateGaussNoise() + m_driftY;
     return true;

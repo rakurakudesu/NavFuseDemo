@@ -137,11 +137,16 @@ void CNavFuseDemoView::Dump(CDumpContext& dc) const
 }
 #endif
 #endif //_DEBUG
+
 void CNavFuseDemoView::OnInitialUpdate()
 {
+    CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
+    CNavFuseDemoDlg* pDlg = pApp ? pApp->m_pMainDlg : nullptr;
+    int initialSpeed = (pDlg != nullptr) ? pDlg->Timer_speed : 50;  // 默认为50ms
 
-    // 初始化定时器（50ms间隔，即20Hz刷新）
-    SetTimer(1, 5, NULL);
+    // 使用初始间隔设置定时器
+    SetTimer(1, initialSpeed, NULL);
+
 
     // 关键：设置为直线运动模式（LINE），速度1m/s（参数1为速度）
     m_mot.SetMotionParam(m_mot.m_type, 200.0, 10);
@@ -166,7 +171,6 @@ void CNavFuseDemoView::OnInitialUpdate()
     m_gpsTracePoints.clear();
     m_insTracePoints.clear();
     CView::OnInitialUpdate();
-
 }
 
 double currentTime = 2;
@@ -175,7 +179,7 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
    // 1. 时间步长固定为定时器间隔（50ms = 0.05s）
-    const double dt = 0.02;
+    double dt = 0.01;
     m_mot.UpdateTruePos(dt); // 更新运动模型的真实位置
     currentTime += dt;
 

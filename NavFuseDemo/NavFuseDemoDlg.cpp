@@ -56,6 +56,7 @@ CNavFuseDemoDlg::CNavFuseDemoDlg(CWnd* pParent /*=nullptr*/)
 	, Timer_speed(50)
 	, is_GPS(FALSE)
 	, is_INS(FALSE)
+	, edit_step(0.02)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -66,6 +67,7 @@ void CNavFuseDemoDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, EDITSpeed, Timer_speed);
 	DDX_Check(pDX, CHECK_GPS, is_GPS);
 	DDX_Check(pDX, CHECK_INS, is_INS);
+	DDX_Text(pDX, EDIT_Step, edit_step);
 }
 
 BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
@@ -80,6 +82,7 @@ BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
 
 	ON_BN_CLICKED(CHECK_GPS, &CNavFuseDemoDlg::OnBnClickedGps)
 	ON_BN_CLICKED(CHECK_INS, &CNavFuseDemoDlg::OnBnClickedIns)
+	ON_EN_CHANGE(EDIT_Step, &CNavFuseDemoDlg::OnEnChangeStep)
 END_MESSAGE_MAP()
 
 
@@ -234,12 +237,17 @@ void CNavFuseDemoDlg::OnStnClickedDraw()
 void CNavFuseDemoDlg::OnEnChangeEditspeed()
 {
 	// TODO:  如果该控件是 RICHEDIT 控件，它将不
-	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
-	// 函数并调用 CRichEditCtrl().SetEventMask()，
-	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+	UpdateData(TRUE);
 
-	// TODO:  在此添加控件通知处理程序代码
+	if (Timer_speed <= 0) Timer_speed = 50;  // 最小间隔50ms
+
 	SetTimer(1, Timer_speed, NULL);
+
+	if (m_pview != nullptr)
+	{
+		m_pview->KillTimer(1);  // 先销毁旧定时器
+		m_pview->SetTimer(1, Timer_speed, NULL);  // 用新间隔创建定时器
+	}
 }
 
 void CNavFuseDemoDlg::OnBnClickedGps()
@@ -256,4 +264,11 @@ void CNavFuseDemoDlg::OnBnClickedIns()
 	is_INS = !is_INS;
 	m_pview->ResetTrace();
 	UpdateData(FALSE);
+}
+
+void CNavFuseDemoDlg::OnEnChangeStep()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+	m_pview->ResetTrace();
 }

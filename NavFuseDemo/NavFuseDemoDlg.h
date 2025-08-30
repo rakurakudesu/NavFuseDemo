@@ -42,5 +42,7 @@ public:
 	BOOL is_INS;
 	afx_msg void OnBnClickedGps();
 	afx_msg void OnBnClickedIns();
+	double edit_step;
+	afx_msg void OnEnChangeStep();
 };
 

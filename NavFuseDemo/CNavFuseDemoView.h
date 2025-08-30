@@ -12,12 +12,17 @@ protected:
 
 public:
 	virtual void OnDraw(CDC* pDC);      // 重写以绘制该视图
-	virtual void CNavFuseDemoView::OnInitialUpdate();
-private:
+	virtual void OnInitialUpdate();
+
+	void ClearTrace();  //清空轨迹
+	void ResetTrace();  //重置轨迹
+
 	double m_lastX = 0.0;  // 上一帧X坐标
 	double m_lastY = 0.0;  // 上一帧Y坐标
-	bool m_isFirstDraw = true;  // 是否首次绘制（用于初始化起点）
-	std::vector<CPoint> m_tracePoints; // 新增：存储所有轨迹点
+	bool m_isFirstDraw = true;  
+	std::vector<CPoint> m_tracePoints;    // 真实轨迹点
+	std::vector<CPoint> m_gpsTracePoints;  // GPS轨迹点
+
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 #ifndef _WIN32_WCE

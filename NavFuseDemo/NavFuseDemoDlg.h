@@ -11,7 +11,6 @@ class CNavFuseDemoDlg : public CDialogEx
 // 构造
 public:
 	CNavFuseDemoDlg(CWnd* pParent = nullptr);	// 标准构造函数
-
 // 对话框数据
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_NAVFUSEDEMO_DIALOG };
@@ -31,4 +30,15 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedRadio3();
+	afx_msg void OnBnClickedLine();
+	afx_msg void OnBnClickedArc();
+	afx_msg void OnBnClickedSCurve();
+	afx_msg void OnStnClickedDraw();
+	int Timer_speed=50;
+	afx_msg void OnEnChangeEditspeed();
+	BOOL is_GPS;
+	afx_msg void OnBnClickedGps();
 };
+

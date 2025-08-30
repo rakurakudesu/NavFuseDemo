@@ -65,8 +65,8 @@ void CMotionModel::UpdateTruePos(double dt)
 
     case ARC:
         // 圆周运动：x = 半径 * cos(角速度 * 时间)，y = 半径 * sin(角速度 * 时间)
-        m_x = 300+m_radius * cos(m_omega * m_time);
-        m_y = 300+m_radius * sin(m_omega * m_time);
+        m_x = 350+m_radius * cos(m_omega * m_time);
+        m_y = 200+m_radius * sin(m_omega * m_time);
         break;
 
     case S_CURVE:

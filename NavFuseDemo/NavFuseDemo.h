@@ -9,7 +9,7 @@
 #endif
 
 #include "resource.h"		// 主符号
-
+#include "NavFuseDemoDlg.h"
 
 // CNavFuseDemoApp:
 // 有关此类的实现，请参阅 NavFuseDemo.cpp
@@ -19,7 +19,7 @@ class CNavFuseDemoApp : public CWinApp
 {
 public:
 	CNavFuseDemoApp();
-
+	CNavFuseDemoDlg* m_pMainDlg;
 // 重写
 public:
 	virtual BOOL InitInstance();

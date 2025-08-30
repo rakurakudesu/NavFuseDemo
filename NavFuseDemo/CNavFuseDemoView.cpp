@@ -5,6 +5,7 @@
 #include "NavFuseDemo.h"
 #include "CNavFuseDemoView.h"
 #include "CMotionModel.h"
+#include "NavFuseDemoDlg.h"
 #include "CSensor.h"
 #include <vector>
 
@@ -27,6 +28,7 @@ END_MESSAGE_MAP()
 
 CMotionModel m_mot;
 CGPS gps;
+CINS ins;
 double simx, simy;
 double x, y;
 // CNavFuseDemoView 绘图
@@ -38,13 +40,13 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
     // 1. 设置画笔和画刷
     CPen tracePen(PS_SOLID, 2, RGB(255, 0, 0)); // 红色轨迹线（2px宽）
     CPen* pOldPen = pDC->SelectObject(&tracePen);
-    CBrush startBrush(RGB(0, 255, 0)); // 绿色起点
+    CBrush startBrush(RGB(0, 255, 0)); 
     CBrush* pOldBrush = pDC->SelectObject(&startBrush);
 
-    // 2. 绘制轨迹（确保至少有一个点）
+    // 2. 绘制轨迹
     if (!m_tracePoints.empty())
     {
-        // 2.1 绘制起点（突出显示）
+        // 2.1 绘制起点
         CPoint startPoint = m_tracePoints[0];
         pDC->Ellipse(startPoint.x - 3, startPoint.y - 3,
             startPoint.x + 3, startPoint.y + 3);
@@ -60,9 +62,44 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
         }
     }
 
-    // 3. 还原GDI资源（避免泄漏）
     pDC->SelectObject(pOldPen);
     pDC->SelectObject(pOldBrush);
+
+    // 1. 获取应用程序实例指针
+    CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
+    if (pApp == nullptr)
+        return; // 应用程序指针无效，直接返回
+
+    // 2. 从应用程序类获取对话框指针
+    CNavFuseDemoDlg* pDlg = pApp->m_pMainDlg;
+    if (pDlg == nullptr)
+        return; // 对话框指针无效，直接返回
+
+    // 2. 绘制GPS轨迹（修改为圆点）
+    if (!m_gpsTracePoints.empty() && pDlg->is_GPS)
+    {
+        // 设置GPS圆点画笔和画刷（蓝色）
+        CPen gpsPen(PS_SOLID, 1, RGB(0, 0, 255));
+        CPen* pGpsOldPen = pDC->SelectObject(&gpsPen);
+        CBrush gpsBrush(RGB(0, 0, 255)); // 填充蓝色
+        CBrush* pGpsOldBrush = pDC->SelectObject(&gpsBrush);
+
+        // 遍历所有GPS点，逐个绘制圆点（半径2px，视觉上更像点）
+        for (const auto& gpsPoint : m_gpsTracePoints)
+        {
+            // 绘制圆点：以gpsPoint为中心，宽高4px（半径2px）的椭圆
+            pDC->Ellipse(
+                gpsPoint.x - 2,  // 左
+                gpsPoint.y - 2,  // 上
+                gpsPoint.x + 2,  // 右
+                gpsPoint.y + 2   // 下
+            );
+        }
+
+        // 恢复画笔和画刷
+        pDC->SelectObject(pGpsOldPen);
+        pDC->SelectObject(pGpsOldBrush);
+    }
 }
 
 // CNavFuseDemoView 诊断
@@ -84,13 +121,13 @@ void CNavFuseDemoView::OnInitialUpdate()
 {
 
     // 初始化定时器（50ms间隔，即20Hz刷新）
-    SetTimer(1, 5, NULL);
+    SetTimer(1, 20, NULL);
 
     // 关键：设置为直线运动模式（LINE），速度1m/s（参数1为速度）
-    m_mot.SetMotionParam(CMotionModel::S_CURVE, 200.0, 10); 
+    m_mot.SetMotionParam(m_mot.m_type, 100.0, 10);
 
     // 初始化GPS参数（频率10Hz，精度1.0m）
-    gps.SetParam(10, 1.0);
+    gps.SetParam(10, 10.0);
 
     // 初始化起点坐标（从运动模型获取初始位置）
     double initX, initY;
@@ -102,6 +139,7 @@ void CNavFuseDemoView::OnInitialUpdate()
     m_isFirstDraw = true;
     // 清空历史轨迹
     m_tracePoints.clear();
+    m_gpsTracePoints.clear();
     CView::OnInitialUpdate();
 
 }
@@ -112,7 +150,7 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
    // 1. 时间步长固定为定时器间隔（50ms = 0.05s）
-    const double dt = 0.05;
+    const double dt = 0.02;
     m_mot.UpdateTruePos(dt); // 更新运动模型的真实位置
     currentTime += dt;
 
@@ -126,7 +164,7 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
     int drawX = max(0, min((int)currentX, clientRect.right - 1));
     int drawY = max(0, min((int)currentY, clientRect.bottom - 1));
 
-    // 4. 存储轨迹点（首次绘制时直接记录起点，后续记录当前点并更新上一帧坐标）
+    // 4. 存储轨迹点
     if (m_isFirstDraw)
     {
         // 首次绘制：记录起点，作为轨迹的第一个点
@@ -143,13 +181,37 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
     m_lastX = currentX;
     m_lastY = currentY;
 
-    // 6. 生成GPS模拟数据（原有逻辑保留）
-    gps.GenerateData(currentTime, m_mot.m_x, m_mot.m_y, simx, simy);
+    // 生成GPS模拟数据并存储轨迹
+    double gpsX, gpsY; // GPS模拟坐标
+    // 调用GPS生成数据（传入当前时间、真实坐标，获取模拟坐标）
+    bool gpsValid = gps.GenerateData(currentTime, currentX, currentY, gpsX, gpsY);
+    if (gpsValid) // 仅当GPS生成新数据时才记录轨迹
+    {
+        // 将GPS坐标转换为绘图坐标（与真实轨迹使用相同转换逻辑）
+        int gpsDrawX = max(0, min((int)gpsX, clientRect.right - 1));
+        int gpsDrawY = max(0, min((int)gpsY, clientRect.bottom - 1));
+        m_gpsTracePoints.push_back(CPoint(gpsDrawX, gpsDrawY));
+    }
 
     // 7. 触发重绘
     CRect updateRect(0, 0, clientRect.right, clientRect.bottom); // 整个客户区
-    InvalidateRect(updateRect, FALSE); // FALSE表示不擦除背景（配合双缓冲）
+    InvalidateRect(updateRect, FALSE); 
 
-    // 注意：移除原代码中的 CView::OnInitialUpdate(); 避免重复初始化
     CView::OnTimer(nIDEvent);
+}
+
+
+void CNavFuseDemoView::ResetTrace()
+{
+    m_tracePoints.clear(); // 清空历史轨迹
+    m_gpsTracePoints.clear();
+    m_isFirstDraw = true;  // 重新标记首次绘制
+
+    // 重置上一帧位置为运动模型的初始位置
+    double initX, initY;
+    m_mot.GetTruePos(initX, initY);
+    m_lastX = initX;
+    m_lastY = initY;
+    OnInitialUpdate();
+    Invalidate();
 }

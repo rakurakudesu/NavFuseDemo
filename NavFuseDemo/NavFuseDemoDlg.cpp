@@ -4,6 +4,7 @@
 
 #include "pch.h"
 #include "framework.h"
+#include "resource.h"
 #include "NavFuseDemo.h"
 #include "NavFuseDemoDlg.h"
 #include "afxdialogex.h"
@@ -13,7 +14,7 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
+extern CMotionModel m_mot;
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -52,6 +53,8 @@ END_MESSAGE_MAP()
 
 CNavFuseDemoDlg::CNavFuseDemoDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_NAVFUSEDEMO_DIALOG, pParent)
+	, Timer_speed(50)
+	, is_GPS(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -59,17 +62,25 @@ CNavFuseDemoDlg::CNavFuseDemoDlg(CWnd* pParent /*=nullptr*/)
 void CNavFuseDemoDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Text(pDX, EDITSpeed, Timer_speed);
+	DDX_Radio(pDX, RADIO_GPS, is_GPS);
 }
 
 BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(RADIO_LINE, &CNavFuseDemoDlg::OnBnClickedLine)
+	ON_BN_CLICKED(RADIO_ARC, &CNavFuseDemoDlg::OnBnClickedArc)
+	ON_BN_CLICKED(RADIO_S_CURVE, &CNavFuseDemoDlg::OnBnClickedSCurve)
+	ON_STN_CLICKED(IDC_DRAW, &CNavFuseDemoDlg::OnStnClickedDraw)
+	ON_EN_CHANGE(EDITSpeed, &CNavFuseDemoDlg::OnEnChangeEditspeed)
+	ON_BN_CLICKED(RADIO_GPS, &CNavFuseDemoDlg::OnBnClickedGps)
 END_MESSAGE_MAP()
 
 
 // CNavFuseDemoDlg 消息处理程序
-
+CNavFuseDemoView* m_pview=nullptr;
 BOOL CNavFuseDemoDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
@@ -110,7 +121,7 @@ BOOL CNavFuseDemoDlg::OnInitDialog()
 	this->ScreenToClient(Rect);         // 转换为对话框的客户区坐标（关键：避免位置偏移）
 
 	// 2. 动态创建CNavFuseDemoView实例
-	CNavFuseDemoView* m_pview = (CNavFuseDemoView*)RUNTIME_CLASS(CNavFuseDemoView)->CreateObject();
+	m_pview = (CNavFuseDemoView*)RUNTIME_CLASS(CNavFuseDemoView)->CreateObject();
 	if (NULL == m_pview) return FALSE;  // 容错：若创建失败，初始化失败
 
 	// 3. 创建视图窗口（嵌入到对话框中）
@@ -124,9 +135,15 @@ BOOL CNavFuseDemoDlg::OnInitDialog()
 		this,               // 父窗口：对话框本身
 		ID                  // 视图的ID（与容器控件ID一致，避免冲突）
 	);
-	if (bCreate) {
+	if (bCreate)
+	{
 		m_pview->OnInitialUpdate(); // 触发视图的初始化逻辑
 	}
+
+	CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
+	if (pApp != nullptr)
+		pApp->m_pMainDlg = this; // 记录当前对话框指针
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -178,3 +195,61 @@ HCURSOR CNavFuseDemoDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CNavFuseDemoDlg::OnBnClickedRadio3()
+{
+	// TODO: 在此添加控件通知处理程序代码
+}
+
+void CNavFuseDemoDlg::OnBnClickedLine()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	m_mot.m_type = CMotionModel::LINE;
+	m_pview->ResetTrace();
+
+}
+
+void CNavFuseDemoDlg::OnBnClickedArc()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	m_mot.m_type = CMotionModel::ARC;
+	m_pview->ResetTrace();
+}
+
+void CNavFuseDemoDlg::OnBnClickedSCurve()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	m_mot.m_type = CMotionModel::S_CURVE;
+	m_pview->ResetTrace();
+}
+
+void CNavFuseDemoDlg::OnStnClickedDraw()
+{
+	// TODO: 在此添加控件通知处理程序代码
+}
+
+void CNavFuseDemoDlg::OnEnChangeEditspeed()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+	SetTimer(1, Timer_speed, NULL);
+}
+
+void CNavFuseDemoDlg::OnBnClickedGps()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+	if(is_GPS == true)
+	{
+		is_GPS = false;
+		UpdateData(FALSE);
+	}
+	else
+	{
+		is_GPS = true;
+		UpdateData(FALSE);
+	}
+}

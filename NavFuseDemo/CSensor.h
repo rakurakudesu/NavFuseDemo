@@ -117,7 +117,7 @@ public:
      * @调用场景：对话框类CNavFuseDemoDlg初始化时创建实例
      * @设计思路：默认漂移率0.01m/s（每100ms漂移0.001m），初始漂移量0
      */
-    CINS() {}
+    CINS() : m_driftX(0.0), m_driftY(0.0), m_driftRate(0.01) {}
 
     /**
      * @brief 析构函数：释放INS资源（当前无动态资源）
@@ -138,6 +138,12 @@ public:
      * @设计思路：漂移随时间累积，刷新频率高于GPS，短期数据更精确
      */
     bool GenerateData(double currentTime, double trueX, double trueY, double& simX, double& simY) override;
+
+    /**
+   * @brief 设置INS的漂移率
+   * @param driftRate 漂移率（单位：m/s）
+   */
+    void SetDriftRate(double driftRate);
 
 public:
     double m_driftX;     ///< X方向累积漂移量(m)

@@ -39,3 +39,7 @@ bool CINS::GenerateData(double currentTime, double trueX, double trueY, double& 
     simY = trueY + GenerateGaussNoise() + m_driftY;
     return true;
 }
+
+void CINS::SetDriftRate(double driftRate) {
+    m_driftRate = driftRate;
+}

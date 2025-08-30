@@ -22,6 +22,7 @@ public:
 	bool m_isFirstDraw = true;  
 	std::vector<CPoint> m_tracePoints;    // 真实轨迹点
 	std::vector<CPoint> m_gpsTracePoints;  // GPS轨迹点
+	std::vector<CPoint> m_insTracePoints;  // INS轨迹点
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;

@@ -38,7 +38,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
     CDocument* pDoc = GetDocument();
 
     // 1. 设置画笔和画刷
-    CPen tracePen(PS_SOLID, 2, RGB(255, 0, 0)); // 红色轨迹线（2px宽）
+    CPen tracePen(PS_SOLID, 3, RGB(255, 0, 0)); // 红色轨迹线（2px宽）
     CPen* pOldPen = pDC->SelectObject(&tracePen);
     CBrush startBrush(RGB(0, 255, 0)); 
     CBrush* pOldBrush = pDC->SelectObject(&startBrush);
@@ -79,7 +79,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
     if (!m_gpsTracePoints.empty() && pDlg->is_GPS)
     {
         // 设置GPS圆点画笔和画刷（蓝色）
-        CPen gpsPen(PS_SOLID, 1, RGB(0, 0, 255));
+        CPen gpsPen(PS_SOLID, 2, RGB(0, 0, 255));
         CPen* pGpsOldPen = pDC->SelectObject(&gpsPen);
         CBrush gpsBrush(RGB(0, 0, 255)); // 填充蓝色
         CBrush* pGpsOldBrush = pDC->SelectObject(&gpsBrush);
@@ -99,6 +99,26 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
         // 恢复画笔和画刷
         pDC->SelectObject(pGpsOldPen);
         pDC->SelectObject(pGpsOldBrush);
+    }
+    // 绘制INS连续轨迹
+    if (!m_insTracePoints.empty())
+    {
+        // 设置INS画笔（青色，1px宽，与真实轨迹区分）
+        CPen insPen(PS_SOLID, 2, RGB(100, 150, 100));  
+        CPen* pOldInsPen = pDC->SelectObject(&insPen);
+
+        // 绘制连续线段（从第一个点到最后一个点）
+        if (m_insTracePoints.size() >= 2)
+        {
+            pDC->MoveTo(m_insTracePoints[0]);  // 起点
+            for (size_t i = 1; i < m_insTracePoints.size(); ++i)
+            {
+                pDC->LineTo(m_insTracePoints[i]);  // 连续连接
+            }
+        }
+
+        // 恢复画笔
+        pDC->SelectObject(pOldInsPen);
     }
 }
 
@@ -121,13 +141,17 @@ void CNavFuseDemoView::OnInitialUpdate()
 {
 
     // 初始化定时器（50ms间隔，即20Hz刷新）
-    SetTimer(1, 20, NULL);
+    SetTimer(1, 5, NULL);
 
     // 关键：设置为直线运动模式（LINE），速度1m/s（参数1为速度）
-    m_mot.SetMotionParam(m_mot.m_type, 100.0, 10);
+    m_mot.SetMotionParam(m_mot.m_type, 200.0, 10);
 
     // 初始化GPS参数（频率10Hz，精度1.0m）
     gps.SetParam(10, 10.0);
+
+    // 初始化INS：更高频率（如50Hz），更高短期精度（如1m）
+    ins.SetParam(50, 10.0);
+    ins.SetDriftRate(0.02);  // 自定义漂移率（如0.02m/s）
 
     // 初始化起点坐标（从运动模型获取初始位置）
     double initX, initY;
@@ -140,6 +164,7 @@ void CNavFuseDemoView::OnInitialUpdate()
     // 清空历史轨迹
     m_tracePoints.clear();
     m_gpsTracePoints.clear();
+    m_insTracePoints.clear();
     CView::OnInitialUpdate();
 
 }
@@ -193,6 +218,15 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
         m_gpsTracePoints.push_back(CPoint(gpsDrawX, gpsDrawY));
     }
 
+    // 生成INS模拟数据并存储轨迹（与GPS逻辑对称）
+    double insX, insY;  // INS模拟坐标
+    bool insValid = ins.GenerateData(currentTime, currentX, currentY, insX, insY);
+    if (insValid) {  // 仅当INS生成新数据时记录轨迹
+        int insDrawX = max(0, min((int)insX, clientRect.right - 1));
+        int insDrawY = max(0, min((int)insY, clientRect.bottom - 1));
+        m_insTracePoints.push_back(CPoint(insDrawX, insDrawY));  // 需在CNavFuseDemoView中添加m_insTracePoints成员
+    }
+
     // 7. 触发重绘
     CRect updateRect(0, 0, clientRect.right, clientRect.bottom); // 整个客户区
     InvalidateRect(updateRect, FALSE); 
@@ -205,6 +239,7 @@ void CNavFuseDemoView::ResetTrace()
 {
     m_tracePoints.clear(); // 清空历史轨迹
     m_gpsTracePoints.clear();
+    m_insTracePoints.clear();
     m_isFirstDraw = true;  // 重新标记首次绘制
 
     // 重置上一帧位置为运动模型的初始位置

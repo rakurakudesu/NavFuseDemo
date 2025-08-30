@@ -44,5 +44,15 @@ public:
 	afx_msg void OnBnClickedIns();
 	double edit_step;
 	afx_msg void OnEnChangeStep();
+	double GPS_Freq;
+	double GPS_ACC;
+	double INS_Freq;
+	double INS_ACC;
+	double INS_Drift;
+	afx_msg void OnEnChangeGpsFreq();
+	afx_msg void OnEnChangeGpsAcc();
+	afx_msg void OnEnChangeInsFreq();
+	afx_msg void OnEnChangeInsAcc();
+	afx_msg void OnEnChangeInsDrift();
 };
 

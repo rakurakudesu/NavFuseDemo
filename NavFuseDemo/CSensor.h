@@ -11,6 +11,17 @@
  */
 class CSensor {
 public:
+    double m_freq;       ///< 传感器刷新频率(Hz)
+    double m_acc;        ///< 传感器精度(m)
+    double m_noiseSigma; ///< 噪声标准差（σ=sqrt(acc)，符合高斯分布N(0,σ²)）
+    double m_lastTime;   ///< 上一次生成数据的时间(s)，控制刷新间隔
+    std::random_device m_rd; ///< 随机数种子（用于生成高斯噪声）
+    std::mt19937 m_gen;  ///< 随机数生成器（C++11，确保噪声随机性）
+    double m_driftX;     ///< X方向累积漂移量(m)
+    double m_driftY;     ///< Y方向累积漂移量(m)
+    double m_driftRate;  ///< 漂移率(m/s)（可调整，默认0.01m/s）
+
+public:
     /**
      * @brief 构造函数：初始化传感器默认参数
      * @param 无
@@ -37,13 +48,6 @@ public:
      * @调用场景：对话框“开始”按钮点击时，读取界面参数后调用
      * @设计思路：精度acc对应噪声标准差σ=sqrt(acc)，统一参数入口
      */
-public:
-    double m_freq;       ///< 传感器刷新频率(Hz)
-    double m_acc;        ///< 传感器精度(m)
-    double m_noiseSigma; ///< 噪声标准差（σ=sqrt(acc)，符合高斯分布N(0,σ²)）
-    double m_lastTime;   ///< 上一次生成数据的时间(s)，控制刷新间隔
-    std::random_device m_rd; ///< 随机数种子（用于生成高斯噪声）
-    std::mt19937 m_gen;  ///< 随机数生成器（C++11，确保噪声随机性）
     void SetParam(double freq, double acc);
 
     /**
@@ -117,7 +121,7 @@ public:
      * @调用场景：对话框类CNavFuseDemoDlg初始化时创建实例
      * @设计思路：默认漂移率0.01m/s（每100ms漂移0.001m），初始漂移量0
      */
-    CINS() : m_driftX(0.0), m_driftY(0.0), m_driftRate(0.01) {}
+    CINS() {}
 
     /**
      * @brief 析构函数：释放INS资源（当前无动态资源）
@@ -144,11 +148,6 @@ public:
    * @param driftRate 漂移率（单位：m/s）
    */
     void SetDriftRate(double driftRate);
-
-public:
-    double m_driftX;     ///< X方向累积漂移量(m)
-    double m_driftY;     ///< Y方向累积漂移量(m)
-    double m_driftRate;  ///< 漂移率(m/s)（可调整，默认0.01m/s）
 };
 
 #endif // SENSOR_H

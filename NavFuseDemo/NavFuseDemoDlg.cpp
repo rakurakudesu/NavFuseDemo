@@ -56,7 +56,11 @@ CNavFuseDemoDlg::CNavFuseDemoDlg(CWnd* pParent /*=nullptr*/)
 	, Timer_speed(50)
 	, is_GPS(FALSE)
 	, is_INS(FALSE)
-	, edit_step(0.02)
+	, GPS_Freq(10.0)
+	, GPS_ACC(10.0)
+	, INS_Freq(50.0)
+	, INS_ACC(10.0)
+	, INS_Drift(0.02)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -67,7 +71,11 @@ void CNavFuseDemoDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, EDITSpeed, Timer_speed);
 	DDX_Check(pDX, CHECK_GPS, is_GPS);
 	DDX_Check(pDX, CHECK_INS, is_INS);
-	DDX_Text(pDX, EDIT_Step, edit_step);
+	DDX_Text(pDX, EDIT_GPS_Freq, GPS_Freq);
+	DDX_Text(pDX, EDIT_GPS_ACC, GPS_ACC);
+	DDX_Text(pDX, EDIT_INS_Freq, INS_Freq);
+	DDX_Text(pDX, EDIT_INS_ACC, INS_ACC);
+	DDX_Text(pDX, EDIT_INS_Drift, INS_Drift);
 }
 
 BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
@@ -82,7 +90,11 @@ BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
 
 	ON_BN_CLICKED(CHECK_GPS, &CNavFuseDemoDlg::OnBnClickedGps)
 	ON_BN_CLICKED(CHECK_INS, &CNavFuseDemoDlg::OnBnClickedIns)
-	ON_EN_CHANGE(EDIT_Step, &CNavFuseDemoDlg::OnEnChangeStep)
+	ON_EN_CHANGE(EDIT_GPS_Freq, &CNavFuseDemoDlg::OnEnChangeGpsFreq)
+	ON_EN_CHANGE(EDIT_GPS_ACC, &CNavFuseDemoDlg::OnEnChangeGpsAcc)
+	ON_EN_CHANGE(EDIT_INS_Freq, &CNavFuseDemoDlg::OnEnChangeInsFreq)
+	ON_EN_CHANGE(EDIT_INS_ACC, &CNavFuseDemoDlg::OnEnChangeInsAcc)
+	ON_EN_CHANGE(EDIT_INS_Drift, &CNavFuseDemoDlg::OnEnChangeInsDrift)
 END_MESSAGE_MAP()
 
 
@@ -267,6 +279,41 @@ void CNavFuseDemoDlg::OnBnClickedIns()
 }
 
 void CNavFuseDemoDlg::OnEnChangeStep()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+	m_pview->ResetTrace();
+}
+
+void CNavFuseDemoDlg::OnEnChangeGpsFreq()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+	m_pview->ResetTrace();
+}
+
+void CNavFuseDemoDlg::OnEnChangeGpsAcc()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+	m_pview->ResetTrace();
+}
+
+void CNavFuseDemoDlg::OnEnChangeInsFreq()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+	m_pview->ResetTrace();
+}
+
+void CNavFuseDemoDlg::OnEnChangeInsAcc()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+	m_pview->ResetTrace();
+}
+
+void CNavFuseDemoDlg::OnEnChangeInsDrift()
 {
 	// TODO:  在此添加控件通知处理程序代码
 	UpdateData(TRUE);

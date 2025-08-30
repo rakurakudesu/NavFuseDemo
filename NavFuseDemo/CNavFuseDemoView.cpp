@@ -142,21 +142,26 @@ void CNavFuseDemoView::OnInitialUpdate()
 {
     CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
     CNavFuseDemoDlg* pDlg = pApp ? pApp->m_pMainDlg : nullptr;
-    int initialSpeed = (pDlg != nullptr) ? pDlg->Timer_speed : 50;  // 默认为50ms
+
+    int initialSpeed = (pDlg != nullptr) ? pDlg->Timer_speed : 50;  
+    double initialGpsFreq = (pDlg != nullptr) ? pDlg->GPS_Freq : 10;
+    double initialGpsAcc = (pDlg != nullptr) ? pDlg->GPS_ACC : 10.0;
+    double initialInsFreq = (pDlg != nullptr) ? pDlg ->INS_Freq : 50;
+    double initialInsAcc = (pDlg != nullptr) ? pDlg->INS_ACC : 10.0;
+    double initialInsDrift = (pDlg != nullptr) ? pDlg->INS_Drift : 0.02;
 
     // 使用初始间隔设置定时器
     SetTimer(1, initialSpeed, NULL);
-
 
     // 关键：设置为直线运动模式（LINE），速度1m/s（参数1为速度）
     m_mot.SetMotionParam(m_mot.m_type, 200.0, 10);
 
     // 初始化GPS参数（频率10Hz，精度1.0m）
-    gps.SetParam(10, 10.0);
+    gps.SetParam(initialGpsFreq, initialGpsAcc);
 
     // 初始化INS：更高频率（如50Hz），更高短期精度（如1m）
-    ins.SetParam(50, 10.0);
-    ins.SetDriftRate(0.02);  // 自定义漂移率（如0.02m/s）
+    ins.SetParam(initialInsFreq, initialInsAcc);
+    ins.SetDriftRate(initialInsDrift);  // 自定义漂移率（如0.02m/s）
 
     // 初始化起点坐标（从运动模型获取初始位置）
     double initX, initY;

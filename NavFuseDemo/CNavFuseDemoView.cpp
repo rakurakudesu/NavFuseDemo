@@ -47,7 +47,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
     CBrush startBrush(RGB(0, 255, 0)); 
     CBrush* pOldBrush = pDC->SelectObject(&startBrush);
 
-    // 2. 绘制轨迹
+   //2. 绘制轨迹
     if (!m_tracePoints.empty())
     {
         // 2.1 绘制起点
@@ -104,6 +104,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
         pDC->SelectObject(pGpsOldPen);
         pDC->SelectObject(pGpsOldBrush);
     }
+    
     // 绘制INS连续轨迹
     if (!m_insTracePoints.empty() && pDlg->is_INS)
     {
@@ -117,7 +118,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
             pDC->MoveTo(m_insTracePoints[0]);  // 起点
             for (size_t i = 1; i < m_insTracePoints.size(); ++i)
             {
-                pDC->LineTo(m_insTracePoints[i]);  // 连续连接
+               pDC->LineTo(m_insTracePoints[i]);  // 连续连接
             }
         }
 
@@ -126,13 +127,18 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
     }
 
     // 绘制融合轨迹
-    if (!m_fuseTracePoints.empty())
+    if (m_fuseTracePoints.size() >= 2) 
     {
         CPen pen(PS_SOLID, 2, RGB(0, 255, 255));
         pOldPen = pDC->SelectObject(&pen);
-        pDC->MoveTo(m_fuseTracePoints[0]);
+
+        // 从第一个点开始，依次连接后续所有点，形成连续线段
+        pDC->MoveTo(m_fuseTracePoints[0]);  // 初始起点
         for (size_t i = 1; i < m_fuseTracePoints.size(); ++i)
-            pDC->LineTo(m_fuseTracePoints[i]);
+        {
+            pDC->LineTo(m_fuseTracePoints[i]);  // 从上一点连接到当前点
+        }
+
         pDC->SelectObject(pOldPen);
     }
 }
@@ -188,26 +194,27 @@ void CNavFuseDemoView::OnInitialUpdate()
     ins.ResetDrift();
 
     //初始化滤波
-   // 初始状态向量（6维：x, vx, ax, y, vy, ay）
+    double initTrueX = 0.0;
+    double initTrueY = 300.0;  // 对应 CMotionModel 中 LINE 模式的初始 y 值
+
+    // 2. 构造初始状态向量 [x, vx, ax, y, vy, ay]
+    // 假设初始速度和加速度为0（运动刚开始）
     Eigen::VectorXd initialState(6);
-    initialState << 0.0,   // x位置（初始真实X）
-        0.0,     // x方向速度（初始为0）
-        0.0,     // x方向加速度（初始为0）
-        0.0,   // y位置（初始真实Y）
-        0.0,     // y方向速度（初始为0）
-        0.0;     // y方向加速度（初始为0）
+    initialState << initTrueX, 0.0, 0.0, initTrueY, 0.0, 0.0;
 
-    // 初始协方差矩阵（6x6，对角线元素表示各状态的不确定性）
-    Eigen::MatrixXd initialP = Eigen::MatrixXd::Identity(6, 6);
-    initialP(0, 0) = 0.1;  // x位置初始不确定性
-    initialP(3, 3) = 0.1;  // y位置初始不确定性
-    initialP(1, 1) = 1.0;  // x速度初始不确定性
-    initialP(4, 4) = 1.0;  // y速度初始不确定性
-    initialP(2, 2) = 10.0; // x加速度初始不确定性
-    initialP(5, 5) = 10.0; // y加速度初始不确定性
+    // 3. 构造初始协方差矩阵（位置不确定性小，速度/加速度不确定性大）
+    Eigen::MatrixXd initialP(6, 6);
+    initialP.setZero();
+    initialP.diagonal() << 1.0,   // x 位置误差（1m内）
+        10.0,   // x 速度误差
+        100.0,   // x 加速度误差
+        1.0,   // y 位置误差（1m内）
+        10.0,   // y 速度误差
+        100.0;   // y 加速度误差
 
-    // 5. 调用ResetKalman重置卡尔曼滤波器
+    // 4. 初始化卡尔曼滤波器（通过 CDataFusion 的接口）
     m_fusion.ResetKalman(initialState, initialP);
+
     // 初始化起点坐标（从运动模型获取初始位置）
     double initX, initY;
     m_mot.GetTruePos(initX, initY);
@@ -220,6 +227,7 @@ void CNavFuseDemoView::OnInitialUpdate()
     m_tracePoints.clear();
     m_gpsTracePoints.clear();
     m_insTracePoints.clear();
+
     CView::OnInitialUpdate();
 }
 
@@ -281,29 +289,44 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
         m_insTracePoints.push_back(CPoint(insDrawX, insDrawY)); 
     }
 
-    // 6. 数据融合与滤波（核心逻辑）
     double fuseX, fuseY;  // 融合后的坐标
-
     // 6.1 计算传感器MSE（用于加权融合的权重计算）
     m_fusion.CalcSensorMSE(currentX, currentY, gpsX, gpsY, insX, insY);
 
     // 6.2 从对话框获取当前选择的融合算法（如卡尔曼、加权等）
     CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
     CNavFuseDemoDlg* pDlg = pApp ? pApp->m_pMainDlg : nullptr;
-    if (pDlg != nullptr) {
+    if (pDlg == nullptr) 
+    {
         // 假设对话框通过下拉框选择算法，这里简化为直接设置（需根据实际UI调整）
         // 例如：若选择卡尔曼滤波，设置为KALMAN
         m_fusion.SetAlgorithm(CDataFusion::KALMAN);  // 可替换为WEIGHTED/UKF/PARTICLE
     }
 
-    // 6.3 执行融合（自动调用当前算法：如卡尔曼滤波）
+    // 6.3 执行融合
     m_fusion.FuseData(currentX, currentY, gpsX, gpsY, insX, insY, fuseX, fuseY);
 
-    // 6.4 存储融合轨迹（转换为绘图坐标并限制范围）
-    int fuseDrawX = max(0, min((int)fuseX, clientRect.right - 1));
-    int fuseDrawY = max(0, min((int)fuseY, clientRect.bottom - 1));
-    m_fuseTracePoints.push_back(CPoint(fuseDrawX, fuseDrawY));
+    // 6.4 存储融合轨迹
+    if (m_fuseTracePoints.empty()) {
+        int fuseDrawX = max(0, min((int)(fuseX + 0.5), clientRect.right - 1));
+        int fuseDrawY = max(0, min((int)(fuseY + 0.5), clientRect.bottom - 1));
+        m_fuseTracePoints.push_back(CPoint(fuseDrawX, fuseDrawY));
+    }
+    else 
+    {
+        // 非第一个点：计算与上一点的距离
+        CPoint lastPoint = m_fuseTracePoints.back();  // 上一个点
+        int dx = abs((int)fuseX - lastPoint.x);
+        int dy = abs((int)fuseY - lastPoint.y);
+        int distance = (int)sqrt(dx * dx + dy * dy);  // 欧氏距离
 
+        // 仅保留距离小于阈值的点（如10单位，可调整）
+        if (distance < 100) {
+            int fuseDrawX = max(0, min((int)(fuseX + 0.5), clientRect.right - 1));
+            int fuseDrawY = max(0, min((int)(fuseY + 0.5), clientRect.bottom - 1));
+            m_fuseTracePoints.push_back(CPoint(fuseDrawX, fuseDrawY));
+        }
+    }
     // 7. 触发重绘
     CRect updateRect(0, 0, clientRect.right, clientRect.bottom); // 整个客户区
     InvalidateRect(updateRect, FALSE); 
@@ -326,6 +349,15 @@ void CNavFuseDemoView::ResetTrace()
     m_mot.GetTruePos(initX, initY);
     m_lastX = initX;
     m_lastY = initY;
+
+    // 3. 重置卡尔曼滤波器初始状态（基于运动模型初始位置）
+    Eigen::VectorXd initialState(6);
+    initialState << 0.0, 0.0, 0.0, 300.0, 0.0, 0.0;  // [x, vx, ax, y, vy, ay]
+    Eigen::MatrixXd initialP(6, 6);
+    initialP.setZero();
+    initialP.diagonal() << 1.0, 10.0, 100.0, 1.0, 10.0, 100.0;  // 初始协方差
+    m_fusion.ResetKalman(initialState, initialP);
+
     OnInitialUpdate();
     Invalidate();
 }

@@ -11,7 +11,9 @@
 #define AFX_IDC_CHANGE                  101
 #define IDD_NAVFUSEDEMO_DIALOG          102
 #define AFX_IDC_BROWSER                 102
+#define IDD_MotionDlg                   103
 #define IDR_MAINFRAME                   128
+#define IDD_DIALOG1                     131
 #define AFX_IDC_PRINT_DOCNAME           201
 #define AFX_IDC_PRINT_PRINTERNAME       202
 #define AFX_IDC_PRINT_PORTNAME          203
@@ -36,8 +38,11 @@
 #define EDIT_INS_Freq                   1016
 #define EDIT_GPS_ACC                    1017
 #define EDIT_INS_ACC                    1018
-#define IDC_EDIT1                       1019
 #define EDIT_INS_Drift                  1019
+#define EDIT_LineSpeed                  1020
+#define EDIT_ArcRadius                  1022
+#define IDC_EDIT4                       1023
+#define EDIT_Am                         1023
 #define AFX_IDC_COLOR_BLACK             1100
 #define AFX_IDC_COLOR_WHITE             1101
 #define AFX_IDC_COLOR_RED               1102
@@ -113,6 +118,12 @@
 #define AFX_IDD_PROPPAGE_COLOR          32257
 #define AFX_IDD_PROPPAGE_FONT           32258
 #define AFX_IDD_PROPPAGE_PICTURE        32259
+#define ID_32771                        32771
+#define ID_32772                        32772
+#define ID_32773                        32773
+#define ID_32774                        32774
+#define MENU1                           32775
+#define MENU_Motion                     32776
 #define AFX_IDS_APP_TITLE               0xE000
 #define AFX_IDS_IDLEMESSAGE             0xE001
 #define AFX_IDS_HELPMODEMESSAGE         0xE002
@@ -543,9 +554,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        130
-#define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1020
-#define _APS_NEXT_SYMED_VALUE           101
+#define _APS_NEXT_RESOURCE_VALUE        134
+#define _APS_NEXT_COMMAND_VALUE         32777
+#define _APS_NEXT_CONTROL_VALUE         1024
+#define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

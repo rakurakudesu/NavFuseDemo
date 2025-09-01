@@ -19,7 +19,6 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
-
 // 实现
 protected:
 	HICON m_hIcon;
@@ -36,23 +35,25 @@ public:
 	afx_msg void OnBnClickedArc();
 	afx_msg void OnBnClickedSCurve();
 	afx_msg void OnStnClickedDraw();
-	int Timer_speed=50;
 	afx_msg void OnEnChangeEditspeed();
-	BOOL is_GPS;
-	BOOL is_INS;
 	afx_msg void OnBnClickedGps();
 	afx_msg void OnBnClickedIns();
-	double edit_step;
 	afx_msg void OnEnChangeStep();
-	double GPS_Freq;
-	double GPS_ACC;
-	double INS_Freq;
-	double INS_ACC;
-	double INS_Drift;
 	afx_msg void OnEnChangeGpsFreq();
 	afx_msg void OnEnChangeGpsAcc();
 	afx_msg void OnEnChangeInsFreq();
 	afx_msg void OnEnChangeInsAcc();
 	afx_msg void OnEnChangeInsDrift();
+	afx_msg void OnMenuMotion(); 
+	BOOL is_GPS;
+	BOOL is_INS;
+	CMenu m_Menu;
+	int Timer_speed = 50;
+	double edit_step;
+	double GPS_Freq;
+	double GPS_ACC;
+	double INS_Freq;
+	double INS_ACC;
+	double INS_Drift;
 };
 

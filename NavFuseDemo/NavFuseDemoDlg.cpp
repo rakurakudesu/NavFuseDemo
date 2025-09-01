@@ -10,6 +10,7 @@
 #include "afxdialogex.h"
 #include "CNavFuseDemoView.h"
 #include "CMotionModel.h"
+#include "CMotionDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -87,7 +88,7 @@ BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
 	ON_BN_CLICKED(RADIO_S_CURVE, &CNavFuseDemoDlg::OnBnClickedSCurve)
 	ON_STN_CLICKED(IDC_DRAW, &CNavFuseDemoDlg::OnStnClickedDraw)
 	ON_EN_CHANGE(EDITSpeed, &CNavFuseDemoDlg::OnEnChangeEditspeed)
-
+	ON_COMMAND(MENU_Motion, &CNavFuseDemoDlg::OnMenuMotion)
 	ON_BN_CLICKED(CHECK_GPS, &CNavFuseDemoDlg::OnBnClickedGps)
 	ON_BN_CLICKED(CHECK_INS, &CNavFuseDemoDlg::OnBnClickedIns)
 	ON_EN_CHANGE(EDIT_GPS_Freq, &CNavFuseDemoDlg::OnEnChangeGpsFreq)
@@ -100,11 +101,14 @@ END_MESSAGE_MAP()
 
 // CNavFuseDemoDlg 消息处理程序
 CNavFuseDemoView* m_pview=nullptr;
-BOOL CNavFuseDemoDlg::OnInitDialog()
+
+BOOL CNavFuseDemoDlg::OnInitDialog()  //对话框初始化
 {
 	CDialogEx::OnInitDialog();
 
 	// 将“关于...”菜单项添加到系统菜单中。
+	m_Menu.LoadMenu(MENU1);  //添加菜单到主对话框
+	SetMenu(&m_Menu);
 
 	// IDM_ABOUTBOX 必须在系统命令范围内。
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
@@ -318,4 +322,12 @@ void CNavFuseDemoDlg::OnEnChangeInsDrift()
 	// TODO:  在此添加控件通知处理程序代码
 	UpdateData(TRUE);
 	m_pview->ResetTrace();
+}
+
+void CNavFuseDemoDlg::OnMenuMotion()
+{
+	// TODO: 在此添加命令处理程序代码
+	CMotionDlg Dlg;
+	Dlg.m_pview1 = m_pview; 
+	Dlg.DoModal();
 }

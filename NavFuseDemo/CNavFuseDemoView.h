@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <vector>
-
+#include "CDataFusion.h"
 // CNavFuseDemoView 视图
 class CNavFuseDemoView : public CView
 {
@@ -18,10 +18,16 @@ public:
 
 	double m_lastX = 0.0;  // 上一帧X坐标
 	double m_lastY = 0.0;  // 上一帧Y坐标
+	double paramL = 200.0;
+	double paramA = 200.0;
+	double paramS = 200.0;
+
 	bool m_isFirstDraw = true;  
+	CDataFusion m_fusion;
 	std::vector<CPoint> m_tracePoints;    // 真实轨迹点
 	std::vector<CPoint> m_gpsTracePoints;  // GPS轨迹点
 	std::vector<CPoint> m_insTracePoints;  // INS轨迹点
+	std::vector<CPoint> m_fuseTracePoints;  // 融合轨迹点
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;

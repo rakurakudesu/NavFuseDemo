@@ -54,6 +54,9 @@
     <ClInclude Include="CNavFuseDemoView.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CMotionDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NavFuseDemo.cpp">
@@ -84,6 +87,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CNavFuseDemoView.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CMotionDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

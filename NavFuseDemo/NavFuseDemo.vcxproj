@@ -190,6 +190,7 @@
     <ClInclude Include="C7Segment.h" />
     <ClInclude Include="CDataFusion.h" />
     <ClInclude Include="CKalmanFilter.h" />
+    <ClInclude Include="CMotionDlg.h" />
     <ClInclude Include="CMotionModel.h" />
     <ClInclude Include="CNavFuseDemoView.h" />
     <ClInclude Include="COscilloscope.h" />
@@ -205,6 +206,7 @@
     <ClCompile Include="C7Segment.cpp" />
     <ClCompile Include="CDataFusion.cpp" />
     <ClCompile Include="CKalmanFilter.cpp" />
+    <ClCompile Include="CMotionDlg.cpp" />
     <ClCompile Include="CMotionModel.cpp" />
     <ClCompile Include="CNavFuseDemoView.cpp" />
     <ClCompile Include="COscilloscope.cpp" />

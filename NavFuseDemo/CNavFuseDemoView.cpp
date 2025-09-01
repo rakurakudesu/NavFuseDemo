@@ -4,9 +4,11 @@
 #include "pch.h"
 #include "NavFuseDemo.h"
 #include "CNavFuseDemoView.h"
+#include "CDataFusion.h"
 #include "CMotionModel.h"
 #include "NavFuseDemoDlg.h"
 #include "CSensor.h"
+#include "CKalmanFilter.h"
 #include <vector>
 
 // CNavFuseDemoView
@@ -29,6 +31,8 @@ END_MESSAGE_MAP()
 CMotionModel m_mot;
 CGPS gps;
 CINS ins;
+CKalmanFilter kalman;
+
 double simx, simy;
 double x, y;
 // CNavFuseDemoView 绘图
@@ -38,7 +42,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
     CDocument* pDoc = GetDocument();
 
     // 1. 设置画笔和画刷
-    CPen tracePen(PS_SOLID, 3, RGB(255, 0, 0)); // 红色轨迹线（2px宽）
+    CPen tracePen(PS_SOLID, 3, RGB(255, 0, 0)); // 红色轨迹线
     CPen* pOldPen = pDC->SelectObject(&tracePen);
     CBrush startBrush(RGB(0, 255, 0)); 
     CBrush* pOldBrush = pDC->SelectObject(&startBrush);
@@ -51,7 +55,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
         pDC->Ellipse(startPoint.x - 3, startPoint.y - 3,
             startPoint.x + 3, startPoint.y + 3);
 
-        // 2.2 绘制连续线段（从第一个点到最后一个点，逐段连接）
+        // 2.2 绘制连续线段
         if (m_tracePoints.size() >= 2)
         {
             pDC->MoveTo(m_tracePoints[0]); // 移动到起点
@@ -68,26 +72,26 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
     // 1. 获取应用程序实例指针
     CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
     if (pApp == nullptr)
-        return; // 应用程序指针无效，直接返回
+        return; 
 
     // 2. 从应用程序类获取对话框指针
     CNavFuseDemoDlg* pDlg = pApp->m_pMainDlg;
     if (pDlg == nullptr)
-        return; // 对话框指针无效，直接返回
+        return; 
 
-    // 2. 绘制GPS轨迹（修改为圆点）
+    // 2. 绘制GPS轨迹
     if (!m_gpsTracePoints.empty() && pDlg->is_GPS)
     {
-        // 设置GPS圆点画笔和画刷（蓝色）
+        // 设置GPS圆点画笔和画刷
         CPen gpsPen(PS_SOLID, 2, RGB(0, 0, 255));
         CPen* pGpsOldPen = pDC->SelectObject(&gpsPen);
-        CBrush gpsBrush(RGB(0, 0, 255)); // 填充蓝色
+        CBrush gpsBrush(RGB(0, 0, 255));
         CBrush* pGpsOldBrush = pDC->SelectObject(&gpsBrush);
 
         // 遍历所有GPS点，逐个绘制圆点
         for (const auto& gpsPoint : m_gpsTracePoints)
         {
-            // 绘制圆点：以gpsPoint为中心，宽高4px（半径2px）的椭圆
+            // 绘制圆点
             pDC->Ellipse(
                 gpsPoint.x - 2,  // 左
                 gpsPoint.y - 2,  // 上
@@ -103,11 +107,11 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
     // 绘制INS连续轨迹
     if (!m_insTracePoints.empty() && pDlg->is_INS)
     {
-        // 设置INS画笔（青色，1px宽，与真实轨迹区分）
+        // 设置INS画笔
         CPen insPen(PS_SOLID, 2, RGB(100, 150, 100));  
         CPen* pOldInsPen = pDC->SelectObject(&insPen);
 
-        // 绘制连续线段（从第一个点到最后一个点）
+        // 绘制连续线段
         if (m_insTracePoints.size() >= 2)
         {
             pDC->MoveTo(m_insTracePoints[0]);  // 起点
@@ -119,6 +123,17 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
 
         // 恢复画笔
         pDC->SelectObject(pOldInsPen);
+    }
+
+    // 绘制融合轨迹
+    if (m_fuseTracePoints.size() >= 2)
+    {
+        CPen pen(PS_SOLID, 2, RGB(0, 255, 255));
+        pOldPen = pDC->SelectObject(&pen);
+        pDC->MoveTo(m_fuseTracePoints[0]);
+        for (size_t i = 1; i < m_fuseTracePoints.size(); ++i)
+            pDC->LineTo(m_fuseTracePoints[i]);
+        pDC->SelectObject(pOldPen);
     }
 }
 
@@ -153,15 +168,23 @@ void CNavFuseDemoView::OnInitialUpdate()
     // 使用初始间隔设置定时器
     SetTimer(1, initialSpeed, NULL);
 
-    // 关键：设置为直线运动模式（LINE），速度1m/s（参数1为速度）
-    m_mot.SetMotionParam(m_mot.m_type, 200.0, 10);
+    // 设置运动模式以及对应的参数
+    switch (m_mot.m_type)
+    {
+    case CMotionModel::LINE:  
+        m_mot.SetMotionParam(m_mot.m_type, paramL); break;
+    case CMotionModel::ARC:
+        m_mot.SetMotionParam(m_mot.m_type, paramA, 10); break;
+    case CMotionModel::S_CURVE:
+        m_mot.SetMotionParam(m_mot.m_type, paramS); break;
 
-    // 初始化GPS参数（频率10Hz，精度1.0m）
+    }
+    // 初始化GPS参数
     gps.SetParam(initialGpsFreq, initialGpsAcc);
 
-    // 初始化INS：更高频率（如50Hz），更高短期精度（如1m）
+    // 初始化INS
     ins.SetParam(initialInsFreq, initialInsAcc);
-    ins.SetDriftRate(initialInsDrift);  // 自定义漂移率（如0.02m/s）
+    ins.SetDriftRate(initialInsDrift); 
 
     // 初始化起点坐标（从运动模型获取初始位置）
     double initX, initY;
@@ -183,7 +206,7 @@ double currentTime = 2;
 void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-   // 1. 时间步长固定为定时器间隔（50ms = 0.05s）
+
     double dt = 0.01;
     m_mot.UpdateTruePos(dt); // 更新运动模型的真实位置
     currentTime += dt;
@@ -192,7 +215,7 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
     double currentX, currentY;
     m_mot.GetTruePos(currentX, currentY);
 
-    // 3. 坐标转换为绘图坐标（确保在视图范围内）
+    // 3. 坐标转换为绘图坐标
     CRect clientRect;
     GetClientRect(&clientRect);
     int drawX = max(0, min((int)currentX, clientRect.right - 1));
@@ -207,11 +230,11 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
     }
     else
     {
-        // 非首次绘制：记录当前点（用于绘制线段）
+        // 非首次绘制：记录当前点
         m_tracePoints.push_back(CPoint(drawX, drawY));
     }
 
-    // 5. 更新上一帧坐标为当前坐标（供后续绘制线段使用）
+    // 5. 更新上一帧坐标为当前坐标
     m_lastX = currentX;
     m_lastY = currentY;
 
@@ -227,14 +250,37 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
         m_gpsTracePoints.push_back(CPoint(gpsDrawX, gpsDrawY));
     }
 
-    // 生成INS模拟数据并存储轨迹（与GPS逻辑对称）
+    // 生成INS模拟数据并存储轨迹
     double insX, insY;  // INS模拟坐标
     bool insValid = ins.GenerateData(currentTime, currentX, currentY, insX, insY);
     if (insValid) {  // 仅当INS生成新数据时记录轨迹
         int insDrawX = max(0, min((int)insX, clientRect.right - 1));
         int insDrawY = max(0, min((int)insY, clientRect.bottom - 1));
-        m_insTracePoints.push_back(CPoint(insDrawX, insDrawY));  // 需在CNavFuseDemoView中添加m_insTracePoints成员
+        m_insTracePoints.push_back(CPoint(insDrawX, insDrawY)); 
     }
+
+    // 6. 数据融合与滤波（核心逻辑）
+    double fuseX, fuseY;  // 融合后的坐标
+
+    // 6.1 计算传感器MSE（用于加权融合的权重计算）
+    m_fusion.CalcSensorMSE(currentX, currentY, gpsX, gpsY, insX, insY);
+
+    // 6.2 从对话框获取当前选择的融合算法（如卡尔曼、加权等）
+    CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
+    CNavFuseDemoDlg* pDlg = pApp ? pApp->m_pMainDlg : nullptr;
+    if (pDlg != nullptr) {
+        // 假设对话框通过下拉框选择算法，这里简化为直接设置（需根据实际UI调整）
+        // 例如：若选择卡尔曼滤波，设置为KALMAN
+        m_fusion.SetAlgorithm(CDataFusion::KALMAN);  // 可替换为WEIGHTED/UKF/PARTICLE
+    }
+
+    // 6.3 执行融合（自动调用当前算法：如卡尔曼滤波）
+    m_fusion.FuseData(currentX, currentY, gpsX, gpsY, insX, insY, fuseX, fuseY);
+
+    // 6.4 存储融合轨迹（转换为绘图坐标并限制范围）
+    int fuseDrawX = max(0, min((int)fuseX, clientRect.right - 1));
+    int fuseDrawY = max(0, min((int)fuseY, clientRect.bottom - 1));
+    m_fuseTracePoints.push_back(CPoint(fuseDrawX, fuseDrawY));
 
     // 7. 触发重绘
     CRect updateRect(0, 0, clientRect.right, clientRect.bottom); // 整个客户区
@@ -249,6 +295,8 @@ void CNavFuseDemoView::ResetTrace()
     m_tracePoints.clear(); // 清空历史轨迹
     m_gpsTracePoints.clear();
     m_insTracePoints.clear();
+    m_fuseTracePoints.clear();
+
     m_isFirstDraw = true;  // 重新标记首次绘制
 
     // 重置上一帧位置为运动模型的初始位置

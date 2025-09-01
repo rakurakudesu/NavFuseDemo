@@ -148,6 +148,12 @@ public:
    * @param driftRate 漂移率（单位：m/s）
    */
     void SetDriftRate(double driftRate);
+
+    void ResetDrift() {
+        m_driftX = 0.0;
+        m_driftY = 0.0;
+    }
+
 };
 
 #endif // SENSOR_H

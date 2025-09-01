@@ -42,6 +42,8 @@ bool CINS::GenerateData(double currentTime, double trueX, double trueY, double& 
     return true;
 }
 
-void CINS::SetDriftRate(double driftRate) {
+void CINS::SetDriftRate(double driftRate) 
+{
     m_driftRate = driftRate;
 }
+

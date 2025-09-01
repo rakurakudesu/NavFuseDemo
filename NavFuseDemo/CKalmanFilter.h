@@ -26,6 +26,8 @@ public:
      */
     ~CKalmanFilter();
 
+    void Init(const Eigen::VectorXd& initialState, const Eigen::MatrixXd& initialP);
+
     /**
      * @brief 设置卡尔曼滤波核心矩阵（PPT公式参数）
      * @param F：状态转移矩阵（6x6，2D匀加速模型：位置/速度/加速度）

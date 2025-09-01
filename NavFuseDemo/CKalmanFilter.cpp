@@ -26,6 +26,18 @@ void CKalmanFilter::SetParam(Eigen::MatrixXd F,
     m_R = R;
 }
 
+void CKalmanFilter::Init(const Eigen::VectorXd& initialState, const Eigen::MatrixXd& initialP) {
+    m_x = initialState;
+    m_P = initialP;
+    // ³õÊ¼»¯¾ØÕó£¨6Î¬×´Ì¬£ºx, vx, ax, y, vy, ay£©
+    m_F = Eigen::MatrixXd::Identity(6, 6);
+    m_H = Eigen::MatrixXd(2, 6);
+    m_H << 1, 0, 0, 0, 0, 0,  // ¹Û²âx
+        0, 0, 0, 1, 0, 0; // ¹Û²ây
+    m_Q = Eigen::MatrixXd::Identity(6, 6) * 0.1;  // ¹ý³ÌÔëÉù
+    m_R = Eigen::MatrixXd::Identity(2, 2) * 1.0;  // ¹Û²âÔëÉù
+}
+
 void CKalmanFilter::Predict()
 {
     // Ô¤²â×´Ì¬: x = F * x
@@ -56,6 +68,6 @@ void CKalmanFilter::Update(double zX, double zY)
 }
 
 Eigen::VectorXd CKalmanFilter::GetState() const
-{
+ {
     return m_x;
 }

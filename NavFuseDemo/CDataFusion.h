@@ -94,7 +94,7 @@
 
 
         void GetMSE(double& gpsMSE, double& insMSE, double& fuseMSE);
-    private:
+
         AlgType m_alg;              ///< 当前融合算法类型
         double m_gpsMSE;            ///< GPS的均方误差（MSE）
         double m_insMSE;            ///< INS的均方误差（MSE）
@@ -147,6 +147,10 @@
          * @设计思路：用粒子集近似状态分布，适合非高斯噪声场景
          */
         void ParticleFusion(double trueX, double trueY, double gpsX, double gpsY, double insX, double insY, double& fuseX, double& fuseY);
+        void ResetKalman(const Eigen::VectorXd& initialState, const Eigen::MatrixXd& initialP) 
+        {
+            m_kalman.Init(initialState, initialP);
+        }
 };
 
 #endif // DATAFUSION_H

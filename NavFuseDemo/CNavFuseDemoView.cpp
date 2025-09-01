@@ -126,7 +126,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
     }
 
     // 绘制融合轨迹
-    if (m_fuseTracePoints.size() >= 2)
+    if (!m_fuseTracePoints.empty())
     {
         CPen pen(PS_SOLID, 2, RGB(0, 255, 255));
         pOldPen = pDC->SelectObject(&pen);
@@ -185,7 +185,29 @@ void CNavFuseDemoView::OnInitialUpdate()
     // 初始化INS
     ins.SetParam(initialInsFreq, initialInsAcc);
     ins.SetDriftRate(initialInsDrift); 
+    ins.ResetDrift();
 
+    //初始化滤波
+   // 初始状态向量（6维：x, vx, ax, y, vy, ay）
+    Eigen::VectorXd initialState(6);
+    initialState << 0.0,   // x位置（初始真实X）
+        0.0,     // x方向速度（初始为0）
+        0.0,     // x方向加速度（初始为0）
+        0.0,   // y位置（初始真实Y）
+        0.0,     // y方向速度（初始为0）
+        0.0;     // y方向加速度（初始为0）
+
+    // 初始协方差矩阵（6x6，对角线元素表示各状态的不确定性）
+    Eigen::MatrixXd initialP = Eigen::MatrixXd::Identity(6, 6);
+    initialP(0, 0) = 0.1;  // x位置初始不确定性
+    initialP(3, 3) = 0.1;  // y位置初始不确定性
+    initialP(1, 1) = 1.0;  // x速度初始不确定性
+    initialP(4, 4) = 1.0;  // y速度初始不确定性
+    initialP(2, 2) = 10.0; // x加速度初始不确定性
+    initialP(5, 5) = 10.0; // y加速度初始不确定性
+
+    // 5. 调用ResetKalman重置卡尔曼滤波器
+    m_fusion.ResetKalman(initialState, initialP);
     // 初始化起点坐标（从运动模型获取初始位置）
     double initX, initY;
     m_mot.GetTruePos(initX, initY);

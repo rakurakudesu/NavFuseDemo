@@ -73,6 +73,8 @@ public:
      */
     Eigen::VectorXd GetState() const;
     Eigen::MatrixXd GetStateCovariance() const { return m_P; }
+    void InitState(double initX, double initY);  // ³õÊ¼»¯Î»ÖÃ×´Ì¬
+
 private:
     Eigen::MatrixXd m_F; ///< ×´Ì¬×ªÒÆ¾ØÕó6x6
     Eigen::MatrixXd m_H; ///< ¹Û²â¾ØÕó2x6

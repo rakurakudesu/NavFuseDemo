@@ -78,3 +78,13 @@ Eigen::VectorXd CKalmanFilter::GetState() const
 {
     return m_x;
 }
+
+void CKalmanFilter::InitState(double initX, double initY)
+{
+    m_x.setZero();
+    m_x[0] = initX;  // 初始X位置
+    m_x[3] = initY;  // 初始Y位置
+    // 重置协方差矩阵（可根据模式调整，如高速运动时增大协方差）
+    m_P.setIdentity();
+    m_P *= 10.0;  // 保留合理初始不确定性
+}

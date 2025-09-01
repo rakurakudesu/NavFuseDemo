@@ -127,7 +127,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
     }
 
     // 绘制融合轨迹
-    if (m_fuseTracePoints.size() >= 2) 
+    if (!m_fuseTracePoints.empty()) 
     {
         CPen pen(PS_SOLID, 2, RGB(0, 255, 255));
         pOldPen = pDC->SelectObject(&pen);

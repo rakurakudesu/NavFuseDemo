@@ -280,6 +280,7 @@ void CNavFuseDemoDlg::OnBnClickedIns()
 	is_INS = !is_INS;
 	m_pview->ResetTrace();
 	UpdateData(FALSE);
+
 }
 
 void CNavFuseDemoDlg::OnEnChangeStep()

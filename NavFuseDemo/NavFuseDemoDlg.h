@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+#include "CDataFusion.h"
 
 // CNavFuseDemoDlg 对话框
 class CNavFuseDemoDlg : public CDialogEx
@@ -55,5 +55,11 @@ public:
 	double INS_Freq;
 	double INS_ACC;
 	double INS_Drift;
+	CDataFusion::AlgType FuseType;
+	afx_msg void OnBnClickedFilter();
+	BOOL is_Filter;
+	afx_msg void OnBnClickedkal();
+	afx_msg void OnBnClickedadd();
+	afx_msg void OnBnClickedfgps();
 };
 

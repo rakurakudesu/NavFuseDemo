@@ -126,7 +126,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
         pDC->SelectObject(pOldInsPen);
     }
 
-    if (!m_smoothedFuseTracePoints.empty())
+    if (!m_smoothedFuseTracePoints.empty() && pDlg->is_Filter)
     {
         CPen smoothPen(PS_SOLID, 3, RGB(0, 255, 255));
         pOldPen = pDC->SelectObject(&smoothPen);
@@ -294,11 +294,9 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
     // 6.2 从对话框获取当前选择的融合算法（如卡尔曼、加权等）
     CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
     CNavFuseDemoDlg* pDlg = pApp ? pApp->m_pMainDlg : nullptr;
-    if (pDlg == nullptr) 
+    if (pDlg != nullptr) 
     {
-        // 假设对话框通过下拉框选择算法，这里简化为直接设置（需根据实际UI调整）
-        // 例如：若选择卡尔曼滤波，设置为KALMAN
-        m_fusion.SetAlgorithm(CDataFusion::GPS_ONLY);  // 可替换为WEIGHTED/UKF/PARTICLE
+        m_fusion.SetAlgorithm(pDlg->FuseType);  
     }
 
     // 6.3 执行融合
@@ -343,7 +341,7 @@ CPoint CNavFuseDemoView::SmoothPoint(const std::vector<CPoint>& points, int inde
     if (points.empty()) return CPoint(0, 0);
 
     int start = max(0, index - SMOOTH_WINDOW_SIZE / 2);
-    int end = min((int)points.size() - 1, index + SMOOTH_WINDOW_SIZE / 2);
+    int end = min((int)points.size() - 1, index + SMOOTH_WINDOW_SIZE+1 / 2);
 
     int sumX = 0, sumY = 0;
     int count = 0;

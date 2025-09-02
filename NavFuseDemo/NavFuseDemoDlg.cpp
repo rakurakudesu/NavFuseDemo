@@ -62,6 +62,7 @@ CNavFuseDemoDlg::CNavFuseDemoDlg(CWnd* pParent /*=nullptr*/)
 	, INS_Freq(50.0)
 	, INS_ACC(10.0)
 	, INS_Drift(0.02)
+	, is_Filter(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -77,6 +78,7 @@ void CNavFuseDemoDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, EDIT_INS_Freq, INS_Freq);
 	DDX_Text(pDX, EDIT_INS_ACC, INS_ACC);
 	DDX_Text(pDX, EDIT_INS_Drift, INS_Drift);
+	DDX_Check(pDX, CHECK_Filter, is_Filter);
 }
 
 BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
@@ -96,6 +98,10 @@ BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
 	ON_EN_CHANGE(EDIT_INS_Freq, &CNavFuseDemoDlg::OnEnChangeInsFreq)
 	ON_EN_CHANGE(EDIT_INS_ACC, &CNavFuseDemoDlg::OnEnChangeInsAcc)
 	ON_EN_CHANGE(EDIT_INS_Drift, &CNavFuseDemoDlg::OnEnChangeInsDrift)
+	ON_BN_CLICKED(CHECK_Filter, &CNavFuseDemoDlg::OnBnClickedFilter)
+	ON_BN_CLICKED(RADIO_kal, &CNavFuseDemoDlg::OnBnClickedkal)
+	ON_BN_CLICKED(RADIO_add, &CNavFuseDemoDlg::OnBnClickedadd)
+	ON_BN_CLICKED(RADIO_fgps, &CNavFuseDemoDlg::OnBnClickedfgps)
 END_MESSAGE_MAP()
 
 
@@ -331,4 +337,32 @@ void CNavFuseDemoDlg::OnMenuMotion()
 	CMotionDlg Dlg;
 	Dlg.m_pview1 = m_pview; 
 	Dlg.DoModal();
+}
+void CNavFuseDemoDlg::OnBnClickedFilter()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	is_Filter = !is_Filter;
+	m_pview->ResetTrace();
+	UpdateData(FALSE);
+}
+
+void CNavFuseDemoDlg::OnBnClickedkal()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	FuseType = CDataFusion::KALMAN;
+	m_pview->ResetTrace();
+}
+
+void CNavFuseDemoDlg::OnBnClickedadd()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	FuseType = CDataFusion::WEIGHTED;
+	m_pview->ResetTrace();
+}
+
+void CNavFuseDemoDlg::OnBnClickedfgps()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	FuseType = CDataFusion::GPS_ONLY;
+	m_pview->ResetTrace();
 }

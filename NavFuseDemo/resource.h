@@ -43,6 +43,11 @@
 #define EDIT_ArcRadius                  1022
 #define IDC_EDIT4                       1023
 #define EDIT_Am                         1023
+#define CHECK_Filter                    1024
+#define RADIO_kal                       1025
+#define RADIO_add                       1026
+#define IDC_RADIO3                      1027
+#define RADIO_fgps                      1027
 #define AFX_IDC_COLOR_BLACK             1100
 #define AFX_IDC_COLOR_WHITE             1101
 #define AFX_IDC_COLOR_RED               1102
@@ -556,7 +561,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         32777
-#define _APS_NEXT_CONTROL_VALUE         1024
+#define _APS_NEXT_CONTROL_VALUE         1028
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

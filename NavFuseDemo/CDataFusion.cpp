@@ -102,8 +102,8 @@ void CDataFusion::KalmanFusion(double gpsX, double gpsY,
     // 1. 用INS高频数据修正当前状态（INS频率高于GPS，提供实时运动趋势）
         Eigen::VectorXd currentState = m_kalman.GetState();
     // 假设INS输出的位置更实时，用INS的x/y修正当前状态的位置
-    currentState[0] = insX;  // 更新x位置
-    currentState[3] = insY;  // 更新y位置
+    currentState[0] = gpsX;  // 更新x位置
+    currentState[3] = gpsY;  // 更新y位置
     // 保留当前协方差，仅更新状态向量
     m_kalman.Init(currentState, m_kalman.GetStateCovariance());
 
@@ -111,7 +111,7 @@ void CDataFusion::KalmanFusion(double gpsX, double gpsY,
     m_kalman.Predict();
 
     // 3. 用GPS低频高精度数据更新（校准预测偏差）
-    m_kalman.Update(gpsX, gpsY);
+    m_kalman.Update(insX,  insY);
 
     // 4. 输出融合结果（取状态中的x和y位置）
     Eigen::VectorXd fusedState = m_kalman.GetState();

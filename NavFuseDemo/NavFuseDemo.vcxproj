@@ -76,19 +76,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\乐乐\Desktop\eigen-3.3.8;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\ran%27qi%27sheng\Desktop\eigen-3.4.0;C:\Users\乐乐\Desktop\eigen-3.3.8;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\ran'qi'sheng\Desktop\eigen-3.4.0</IncludePath>
+    <IncludePath>C:\Users\ran%27qi%27sheng\Desktop\eigen-3.4.0;C:\Users\ran'qi'sheng\Desktop\eigen-3.4.0</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\ran'qi'sheng\Desktop\eigen-3.4.0</IncludePath>
+    <IncludePath>C:\Users\ran%27qi%27sheng\Desktop\eigen-3.4.0;C:\Users\ran'qi'sheng\Desktop\eigen-3.4.0</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\ran'qi'sheng\Desktop\eigen-3.4.0</IncludePath>
+    <IncludePath>C:\Users\ran%27qi%27sheng\Desktop\eigen-3.4.0;C:\Users\ran'qi'sheng\Desktop\eigen-3.4.0</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

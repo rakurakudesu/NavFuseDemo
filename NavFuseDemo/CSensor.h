@@ -16,10 +16,7 @@ public:
     double m_noiseSigma; ///< 噪声标准差（σ=sqrt(acc)，符合高斯分布N(0,σ²)）
     double m_lastTime;   ///< 上一次生成数据的时间(s)，控制刷新间隔
     std::random_device m_rd; ///< 随机数种子（用于生成高斯噪声）
-    std::mt19937 m_gen;  ///< 随机数生成器（C++11，确保噪声随机性）
-    double m_driftX;     ///< X方向累积漂移量(m)
-    double m_driftY;     ///< Y方向累积漂移量(m)
-    double m_driftRate;  ///< 漂移率(m/s)（可调整，默认0.01m/s）
+    std::mt19937 m_gen;  ///< 随机数生成器（C++11，确保噪声随机性） ///< 漂移率(m/s)（可调整，默认0.01m/s）
 
 public:
     /**
@@ -121,14 +118,15 @@ public:
      * @调用场景：对话框类CNavFuseDemoDlg初始化时创建实例
      * @设计思路：默认漂移率0.01m/s（每100ms漂移0.001m），初始漂移量0
      */
-    CINS() {}
+    CINS();
 
     /**
      * @brief 析构函数：释放INS资源（当前无动态资源）
      * @param 无
      * @return 无
      */
-    ~CINS() {}
+    ~CINS() 
+    {}
 
     /**
      * @brief 重写生成INS模拟数据（高斯噪声+累积漂移）
@@ -142,18 +140,39 @@ public:
      * @设计思路：漂移随时间累积，刷新频率高于GPS，短期数据更精确
      */
     bool GenerateData(double currentTime, double trueX, double trueY, double& simX, double& simY) override;
-
+    void ResetDrift() {
+        m_driftX = 0.0;
+        m_driftY = 0.0;
+        // 重置积分相关状态
+        m_accX = 0;
+        m_accY = 0;
+        m_velX = 0;
+        m_velY = 0;
+        m_posX = 0;
+        m_posY = 0;
+        m_lastTrueX = 0;
+        m_lastTrueY = 0;
+        m_lastVelX = 0 ;
+        m_lastVelY = 0;
+    }
     /**
    * @brief 设置INS的漂移率
    * @param driftRate 漂移率（单位：m/s）
    */
+    double m_accX;       // X方向加速度（含噪声）
+    double m_accY;       // Y方向加速度（含噪声）
+    double m_velX;       // X方向速度（积分结果）
+    double m_velY;       // Y方向速度（积分结果）
+    double m_posX;       // X方向位置（二次积分结果）
+    double m_posY;       // Y方向位置（二次积分结果）
+    double m_lastTrueX;  // 上一时刻真实X坐标（用于计算真实加速度）
+    double m_lastTrueY;  // 上一时刻真实Y坐标
+    double m_lastVelX;   // 上一时刻速度（用于计算加速度）
+    double m_lastVelY;   // 上一时刻速度
     void SetDriftRate(double driftRate);
-
-    void ResetDrift() {
-        m_driftX = 0.0;
-        m_driftY = 0.0;
-    }
-
+    double m_driftX;     ///< X方向累积漂移量(m)
+    double m_driftY;     ///< Y方向累积漂移量(m)
+    double m_driftRate;
 };
 
 #endif // SENSOR_H

@@ -71,7 +71,7 @@ void CKalmanFilter::UpdateINS(double insX, double insY, double dt)
         insY, (insY - m_x[3]) / dt, 0;
 
     // 融合INS数据到预测状态（带信任权重）
-    m_x = 0.7 * m_x + 0.3 * insState;
+    m_x = 0.9 * m_x + 0.1 * insState;
 }
 
 Eigen::VectorXd CKalmanFilter::GetState() const

@@ -111,6 +111,7 @@ void C7Segment::DrawString(CDC* pDC, const CString& str, int x, int y, COLORREF 
     CFont* pOldFont = pDC->SelectObject(&font);
     pDC->SetTextColor(RGB(255, 255, 255));
     CString label = str.Left(str.Find(':')) + _T(":");
+    pDC->SetBkMode(TRANSPARENT); 
     pDC->TextOut(currentX, y + m_digitHeight / 2 - 5, label);
 
     // 计算标识宽度，移动到数字起始位置
@@ -152,40 +153,44 @@ void C7Segment::DrawDigit(CDC* pDC, int x, int y, int d, bool showDot, COLORREF 
     // 段a：顶部横线（水平居中，缩短两端距离）
     if (segments[0]) {
         pDC->MoveTo(x + 4, y + 2);          // 左起点（稍右移）
-        pDC->LineTo(x + 4 + segLen, y + 2); // 右终点
+        pDC->LineTo(x + 4 + segLen, y + 2); // 右终点（水平）
     }
 
-    // 段b：右上竖线（倾斜角度优化）
+    // 段b：右上竖线（垂直，无倾斜）
     if (segments[1]) {
-        pDC->MoveTo(x + w - 4, y + 4);          // 上起点
-        pDC->LineTo(x + w - 1, midY - 5);       // 下终点（靠近中线）
+        // x坐标固定（右侧），仅y坐标变化
+        pDC->MoveTo(x + w - 4, y + 4);      // 上起点
+        pDC->LineTo(x + w - 4, midY - 2);   // 下终点（到中线上方，垂直）
     }
 
-    // 段c：右下竖线（与段b对称）
+    // 段c：右下竖线（垂直，与段b对齐）
     if (segments[2]) {
-        pDC->MoveTo(x + w - 1, midY + 5);       // 上起点（靠近中线）
-        pDC->LineTo(x + w - 4, y + h - 4);      // 下终点
+        // x坐标固定（与段b同列），仅y坐标变化
+        pDC->MoveTo(x + w - 4, midY + 2);   // 上起点（中线下方）
+        pDC->LineTo(x + w - 4, y + h - 4);  // 下终点（垂直）
     }
 
-    // 段d：底部横线（与段a对称）
+    // 段d：底部横线（与段a对称，水平）
     if (segments[3]) {
         pDC->MoveTo(x + 4, y + h - 4);
         pDC->LineTo(x + 4 + segLen, y + h - 4);
     }
 
-    // 段e：左下竖线（与段c对称）
+    // 段e：左下竖线（垂直，左侧）
     if (segments[4]) {
-        pDC->MoveTo(x + 4, y + h - 4);
-        pDC->LineTo(x + 1, midY + 5);
+        // x坐标固定（左侧），仅y坐标变化
+        pDC->MoveTo(x + 4, y + h - 4);      // 下起点
+        pDC->LineTo(x + 4, midY + 2);       // 上终点（到中线下方，垂直）
     }
 
-    // 段f：左上竖线（与段b对称）
+    // 段f：左上竖线（垂直，与段e对齐）
     if (segments[5]) {
-        pDC->MoveTo(x + 1, midY - 5);
-        pDC->LineTo(x + 4, y + 4);
+        // x坐标固定（与段e同列），仅y坐标变化
+        pDC->MoveTo(x + 4, midY - 2);       // 下起点（中线上方）
+        pDC->LineTo(x + 4, y + 4);          // 上终点（垂直）
     }
 
-    // 段g：中间横线（加粗视觉效果）
+    // 段g：中间横线（加粗，水平）
     if (segments[6]) {
         CPen midPen(PS_SOLID, 3, color);  // 中间线稍粗
         CPen* pOldMidPen = pDC->SelectObject(&midPen);
@@ -200,6 +205,7 @@ void C7Segment::DrawDigit(CDC* pDC, int x, int y, int d, bool showDot, COLORREF 
 
     pDC->SelectObject(pOldPen);
 }
+
 
 void C7Segment::SplitNumber(double val, int& intPart, int& decPart) {
     // 处理负数

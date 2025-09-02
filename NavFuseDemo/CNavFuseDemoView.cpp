@@ -126,17 +126,15 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
         pDC->SelectObject(pOldInsPen);
     }
 
-    // 绘制融合轨迹
-    if (!m_fuseTracePoints.empty()) 
+    if (!m_smoothedFuseTracePoints.empty())
     {
-        CPen pen(PS_SOLID, 2, RGB(0, 255, 255));
-        pOldPen = pDC->SelectObject(&pen);
+        CPen smoothPen(PS_SOLID, 3, RGB(0, 255, 255));
+        pOldPen = pDC->SelectObject(&smoothPen);
 
-        // 从第一个点开始，依次连接后续所有点，形成连续线段
-        pDC->MoveTo(m_fuseTracePoints[0]);  // 初始起点
-        for (size_t i = 1; i < m_fuseTracePoints.size(); ++i)
+        pDC->MoveTo(m_smoothedFuseTracePoints[0]);
+        for (size_t i = 1; i < m_smoothedFuseTracePoints.size(); ++i)
         {
-            pDC->LineTo(m_fuseTracePoints[i]);  // 从上一点连接到当前点
+            pDC->LineTo(m_smoothedFuseTracePoints[i]);
         }
 
         pDC->SelectObject(pOldPen);
@@ -300,7 +298,7 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
     {
         // 假设对话框通过下拉框选择算法，这里简化为直接设置（需根据实际UI调整）
         // 例如：若选择卡尔曼滤波，设置为KALMAN
-        m_fusion.SetAlgorithm(CDataFusion::KALMAN);  // 可替换为WEIGHTED/UKF/PARTICLE
+        m_fusion.SetAlgorithm(CDataFusion::GPS_ONLY);  // 可替换为WEIGHTED/UKF/PARTICLE
     }
 
     // 6.3 执行融合
@@ -321,11 +319,17 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
         int distance = (int)sqrt(dx * dx + dy * dy);  // 欧氏距离
 
         // 仅保留距离小于阈值的点（如10单位，可调整）
-        if (distance < 100) {
+        if (distance < 120) {
             int fuseDrawX = max(0, min((int)(fuseX + 0.5), clientRect.right - 1));
             int fuseDrawY = max(0, min((int)(fuseY + 0.5), clientRect.bottom - 1));
             m_fuseTracePoints.push_back(CPoint(fuseDrawX, fuseDrawY));
         }
+    }
+    // 6.5 计算平滑后的融合轨迹
+    if (!m_fuseTracePoints.empty())
+    {
+        CPoint smoothedPoint = SmoothPoint(m_fuseTracePoints, m_fuseTracePoints.size() - 1);
+        m_smoothedFuseTracePoints.push_back(smoothedPoint);
     }
     // 7. 触发重绘
     CRect updateRect(0, 0, clientRect.right, clientRect.bottom); // 整个客户区
@@ -334,6 +338,25 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
     CView::OnTimer(nIDEvent);
 }
 
+CPoint CNavFuseDemoView::SmoothPoint(const std::vector<CPoint>& points, int index)
+{
+    if (points.empty()) return CPoint(0, 0);
+
+    int start = max(0, index - SMOOTH_WINDOW_SIZE / 2);
+    int end = min((int)points.size() - 1, index + SMOOTH_WINDOW_SIZE / 2);
+
+    int sumX = 0, sumY = 0;
+    int count = 0;
+
+    for (int i = start; i <= end; ++i)
+    {
+        sumX += points[i].x;
+        sumY += points[i].y;
+        count++;
+    }
+
+    return CPoint(sumX / count, sumY / count);
+}
 
 void CNavFuseDemoView::ResetTrace()
 {
@@ -341,6 +364,7 @@ void CNavFuseDemoView::ResetTrace()
     m_gpsTracePoints.clear();
     m_insTracePoints.clear();
     m_fuseTracePoints.clear();
+    m_smoothedFuseTracePoints.clear();  
 
     m_isFirstDraw = true;  // 重新标记首次绘制
 

@@ -16,7 +16,7 @@ public:
      * @enum WEIGHTED：加权平均，根据误差倒数分配权重
      * @enum KALMAN：卡尔曼滤波，基于动态系统模型的最优估计
      */
-    enum AlgType { WEIGHTED, KALMAN };
+    enum AlgType { WEIGHTED, KALMAN, GPS_ONLY};
 
     /**
      * @brief 构造函数：初始化融合的默认状态
@@ -53,7 +53,10 @@ public:
      * @return 无
      * @调用场景：对话框OnTimer中，CalcSensorMSE之后调用
      */
-    void FuseData(double trueX, double trueY, double gpsX, double gpsY, double insX, double insY, double& fuseX, double& fuseY);
+    void CDataFusion::FuseData(double trueX, double trueY,
+        double gpsX, double gpsY,
+        double insX, double insY,
+        double& fuseX, double& fuseY);
 
     /**
      * @brief 获取各数据的MSE，用于界面显示
@@ -113,7 +116,10 @@ private:
      * @return 无
      * @调用场景：FuseData中，m_alg=KALMAN时调用
      */
-    void KalmanFusion(double gpsX, double gpsY, double insX, double insY, double dt, double& fuseX, double& fuseY);
+    void CDataFusion::KalmanFusion(double gpsX, double gpsY,
+        double insX, double insY,
+        double dt,
+        double& fuseX, double& fuseY);
 };
 
 #endif // DATAFUSION_H

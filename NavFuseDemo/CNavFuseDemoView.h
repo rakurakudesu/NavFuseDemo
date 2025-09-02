@@ -14,7 +14,7 @@ public:
 	virtual void OnDraw(CDC* pDC);      // 重写以绘制该视图
 	virtual void OnInitialUpdate();
 
-	void ResetTrace();  //重置轨迹
+	void ResetTrace();  // 重置轨迹
 
 	double m_lastX = 0.0;  // 上一帧X坐标
 	double m_lastY = 0.0;  // 上一帧Y坐标
@@ -22,12 +22,17 @@ public:
 	double paramA = 200.0;
 	double paramS = 200.0;
 
-	bool m_isFirstDraw = true;  
+	bool m_isFirstDraw = true;
 	CDataFusion m_fusion;
+	CGPS gps;
+	CINS ins;
 	std::vector<CPoint> m_tracePoints;    // 真实轨迹点
 	std::vector<CPoint> m_gpsTracePoints;  // GPS轨迹点
 	std::vector<CPoint> m_insTracePoints;  // INS轨迹点
-	std::vector<CPoint> m_fuseTracePoints;  // 融合轨迹点
+	std::vector<CPoint> m_fuseTracePoints;  // 原始融合轨迹点
+	std::vector<CPoint> m_smoothedFuseTracePoints;  // 平滑后的融合轨迹
+	static const int SMOOTH_WINDOW_SIZE = 5;        // 平滑窗口大小
+	CPoint SmoothPoint(const std::vector<CPoint>& points, int index);  // 计算平滑点
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -41,5 +46,3 @@ protected:
 public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };
-
-

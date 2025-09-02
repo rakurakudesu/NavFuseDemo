@@ -29,10 +29,10 @@ m_driftX(0), m_driftY(0), m_driftRate(0.01)
 {
 }
 bool CINS::GenerateData(double currentTime, double trueX, double trueY, double& simX, double& simY) {
-    double dt = (currentTime - m_lastTime)*0.01;  // 时间增量（积分步长）
-    //if (dt < 1.0 / m_freq) {
-    //    return false;  // 未到采样时间
-    //}
+    double dt = (currentTime - m_lastTime);  // 时间增量（积分步长）
+    if (dt < 1.0 / m_freq) {
+        return false;  // 未到采样时间
+    }
 
     // 1. 生成带噪声的加速度测量值（模拟加速度计输出）
     // 真实加速度可从运动模型反推（或假设匀速/匀加速运动）
@@ -40,8 +40,8 @@ bool CINS::GenerateData(double currentTime, double trueX, double trueY, double& 
     double currentVelY = (trueY - m_lastTrueY) / dt;
     double trueAccX = (currentVelX - m_lastVelX) / dt;  // 加速度=速度变化率
     double trueAccY = (currentVelY - m_lastVelY) / dt;
-    m_accX = trueAccX + GenerateGaussNoise() * 0.1;  // 加速度噪声（σ=0.1）
-    m_accY = trueAccY + GenerateGaussNoise() * 0.1;
+    m_accX = trueAccX + GenerateGaussNoise() * 0.01;  // 加速度噪声（σ=0.1）
+    m_accY = trueAccY + GenerateGaussNoise() * 0.01;
 
     // 2. 一次积分：加速度→速度（v = v0 + a*dt）
     m_velX += m_accX * dt;
@@ -52,9 +52,9 @@ bool CINS::GenerateData(double currentTime, double trueX, double trueY, double& 
     m_posY += m_velY * dt + 0.5 * m_accY * dt * dt;
 
     // 4. 叠加累积漂移（原逻辑保留，模拟积分误差放大）
-    double driftDelta = m_driftRate * dt + GenerateGaussNoise() * 0.05;  // 漂移增量
-    double driftDeltaX = m_driftRate * dt + GenerateGaussNoise() * 0.05;
-    double driftDeltaY = m_driftRate * dt + GenerateGaussNoise() * 0.05;
+    double driftDelta = m_driftRate * dt + GenerateGaussNoise() * 0.005;  // 漂移增量
+    double driftDeltaX = m_driftRate * dt + GenerateGaussNoise() * 0.005;
+    double driftDeltaY = m_driftRate * dt + GenerateGaussNoise() * 0.005;
     m_driftX += driftDeltaX;
     m_driftY += driftDeltaY;
     m_posX += m_driftX;  // 位置漂移

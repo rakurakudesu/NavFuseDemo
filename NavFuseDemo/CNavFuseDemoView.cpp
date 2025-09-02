@@ -267,7 +267,7 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
     m_lastY = currentY;
 
     // 生成GPS模拟数据并存储轨迹
-    double gpsX, gpsY; // GPS模拟坐标
+
     // 调用GPS生成数据（传入当前时间、真实坐标，获取模拟坐标）
     bool gpsValid = gps.GenerateData(currentTime, currentX, currentY, gpsX, gpsY);
     if (gpsValid) // 仅当GPS生成新数据时才记录轨迹
@@ -279,7 +279,7 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
     }
 
     // 生成INS模拟数据并存储轨迹
-    double insX, insY;  // INS模拟坐标
+   
     bool insValid = ins.GenerateData(currentTime, currentX, currentY, insX, insY);
     if (insValid) {  // 仅当INS生成新数据时记录轨迹
         int insDrawX = max(0, min((int)insX, clientRect.right - 1));
@@ -323,12 +323,17 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
             m_fuseTracePoints.push_back(CPoint(fuseDrawX, fuseDrawY));
         }
     }
+    if (pDlg != nullptr)
+    {
+        pDlg->Update7Segment(gpsX, gpsY, insX, insY, fuseX, fuseY, currentX, currentY);
+    }
     // 6.5 计算平滑后的融合轨迹
     if (!m_fuseTracePoints.empty())
     {
         CPoint smoothedPoint = SmoothPoint(m_fuseTracePoints, m_fuseTracePoints.size() - 1);
         m_smoothedFuseTracePoints.push_back(smoothedPoint);
     }
+   
     // 7. 触发重绘
     CRect updateRect(0, 0, clientRect.right, clientRect.bottom); // 整个客户区
     InvalidateRect(updateRect, FALSE); 

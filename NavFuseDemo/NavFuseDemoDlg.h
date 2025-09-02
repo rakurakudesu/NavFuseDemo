@@ -4,6 +4,7 @@
 
 #pragma once
 #include "CDataFusion.h"
+#include "C7Segment.h"
 
 // CNavFuseDemoDlg 对话框
 class CNavFuseDemoDlg : public CDialogEx
@@ -58,8 +59,14 @@ public:
 	CDataFusion::AlgType FuseType;
 	afx_msg void OnBnClickedFilter();
 	BOOL is_Filter;
+	C7Segment* m_p7Segment;
+	void Update7Segment(double gpsX, double gpsY,
+		double insX, double insY,
+		double fuseX, double fuseY,
+		double trueX, double trueY);
 	afx_msg void OnBnClickedkal();
 	afx_msg void OnBnClickedadd();
 	afx_msg void OnBnClickedfgps();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };
 

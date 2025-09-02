@@ -21,7 +21,8 @@ public:
 	double paramL = 200.0;
 	double paramA = 200.0;
 	double paramS = 200.0;
-
+	double gpsX, gpsY; // GPS模拟坐标
+	double insX, insY;  // INS模拟坐标
 	bool m_isFirstDraw = true;
 	CDataFusion m_fusion;
 	CGPS gps;

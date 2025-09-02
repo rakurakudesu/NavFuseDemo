@@ -95,7 +95,8 @@ void CDataFusion::KalmanFusion(double gpsX, double gpsY,
     double gpsInsDiff = sqrt(deltaX * deltaX + deltaY * deltaY);
 
     // 若GPS与INS偏差过大，采用INS平滑过渡（不直接用GPS覆盖）
-    if (gpsInsDiff > 5.0) { // 阈值可根据场景调整
+    if (gpsInsDiff > 5.0)
+    { // 阈值可根据场景调整
         currentState[0] = 0.5 * currentState[0] + 0.5 * gpsX; // 平滑更新X
         currentState[3] = 0.5 * currentState[3] + 0.5 * gpsY; // 平滑更新Y
         // 增大过程噪声，适应INS漂移
@@ -103,8 +104,8 @@ void CDataFusion::KalmanFusion(double gpsX, double gpsY,
         m_kalman.SetQ(Q);
     }
     else {
-        currentState[0] = gpsX;
-        currentState[3] = gpsY;
+        currentState[0] = insX;
+        currentState[3] = insY;
         // 恢复正常过程噪声
         m_kalman.SetQ(Eigen::MatrixXd::Identity(6, 6) * 0.01);
     }

@@ -102,6 +102,7 @@ BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
 	ON_BN_CLICKED(RADIO_kal, &CNavFuseDemoDlg::OnBnClickedkal)
 	ON_BN_CLICKED(RADIO_add, &CNavFuseDemoDlg::OnBnClickedadd)
 	ON_BN_CLICKED(RADIO_fgps, &CNavFuseDemoDlg::OnBnClickedfgps)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -111,6 +112,12 @@ CNavFuseDemoView* m_pview=nullptr;
 BOOL CNavFuseDemoDlg::OnInitDialog()  //对话框初始化
 {
 	CDialogEx::OnInitDialog();
+
+	CStatic* pStatic7Seg = (CStatic*)GetDlgItem(Segament);
+	if (pStatic7Seg != nullptr)
+	{
+		m_p7Segment = new C7Segment(pStatic7Seg);
+	}
 
 	// 将“关于...”菜单项添加到系统菜单中。
 	m_Menu.LoadMenu(MENU1);  //添加菜单到主对话框
@@ -174,6 +181,7 @@ BOOL CNavFuseDemoDlg::OnInitDialog()  //对话框初始化
 		pApp->m_pMainDlg = this; // 记录当前对话框指针
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
+	SetTimer(2, 50, nullptr);
 }
 
 void CNavFuseDemoDlg::OnSysCommand(UINT nID, LPARAM lParam)
@@ -365,4 +373,25 @@ void CNavFuseDemoDlg::OnBnClickedfgps()
 	// TODO: 在此添加控件通知处理程序代码
 	FuseType = CDataFusion::GPS_ONLY;
 	m_pview->ResetTrace();
+}
+
+void CNavFuseDemoDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	
+
+	CDialogEx::OnTimer(nIDEvent);
+}
+
+void CNavFuseDemoDlg::Update7Segment(double gpsX, double gpsY,
+	double insX, double insY,
+	double fuseX, double fuseY,
+	double trueX, double trueY)
+{
+	if (m_p7Segment == nullptr) return;
+
+	// 设置数码管显示的坐标数据（假设C7Segment::SetValues支持6个double参数）
+	m_p7Segment->SetValues(gpsX, gpsY, insX, insY, fuseX, fuseY, trueX, trueY);
+	// 触发绘制（实时刷新）
+	m_p7Segment->Draw();
 }

@@ -69,38 +69,55 @@ void C7Segment::SetValues(double gpsX, double gpsY,
 void C7Segment::Draw() {
     if (!m_pStatic) return;
 
+    // 获取静态控件的DC和客户区大小
     CDC* pDC = m_pStatic->GetDC();
     CRect rect;
     m_pStatic->GetClientRect(&rect);
-    pDC->FillSolidRect(rect, RGB(50, 50, 50));  // 黑色背景
 
-    // 调整行高，增加真实坐标显示区域
+    // 1. 创建内存DC和兼容位图（双缓冲核心）
+    CDC memDC;
+    CBitmap memBmp;
+    memDC.CreateCompatibleDC(pDC);
+    memBmp.CreateCompatibleBitmap(pDC, rect.Width(), rect.Height());
+    CBitmap* pOldMemBmp = memDC.SelectObject(&memBmp);
+
+    // 2. 初始化内存DC背景（替代直接在屏幕DC上绘制背景）
+    memDC.FillSolidRect(rect, RGB(50, 50, 50));  // 黑色背景
+
+    // 3. 所有绘制操作改用内存DC（memDC）
     int yPos = 20;
-    const int lineHeight = m_digitHeight + 15;  // 优化行间距
+    const int lineHeight = m_digitHeight + 15;
 
     // 绘制GPS数据（红色）
-    DrawString(pDC, m_gpsXStr, 20, yPos, RGB(255, 70, 130));
+    DrawString(&memDC, m_gpsXStr, 20, yPos, RGB(255, 70, 130));
     yPos += lineHeight;
-    DrawString(pDC, m_gpsYStr, 20, yPos, RGB(255, 70, 130));
+    DrawString(&memDC, m_gpsYStr, 20, yPos, RGB(255, 70, 130));
     yPos += lineHeight;
 
     // 绘制INS数据（绿色）
-    DrawString(pDC, m_insXStr, 20, yPos, RGB(130, 255, 180));
+    DrawString(&memDC, m_insXStr, 20, yPos, RGB(130, 255, 180));
     yPos += lineHeight;
-    DrawString(pDC, m_insYStr, 20, yPos, RGB(130, 255, 180));
+    DrawString(&memDC, m_insYStr, 20, yPos, RGB(130, 255, 180));
     yPos += lineHeight;
 
     // 绘制融合数据（蓝色）
-    DrawString(pDC, m_fuseXStr, 20, yPos, RGB(84, 181, 255));
+    DrawString(&memDC, m_fuseXStr, 20, yPos, RGB(84, 181, 255));
     yPos += lineHeight;
-    DrawString(pDC, m_fuseYStr, 20, yPos, RGB(84, 181, 255));
+    DrawString(&memDC, m_fuseYStr, 20, yPos, RGB(84, 181, 255));
     yPos += lineHeight;
 
-    // 绘制真实坐标数据（黄色）
-    DrawString(pDC, m_trueXStr, 20, yPos, RGB(255, 255, 140));
+    // 绘制真实数据（黄色）
+    DrawString(&memDC, m_trueXStr, 20, yPos, RGB(255, 255, 140));
     yPos += lineHeight;
-    DrawString(pDC, m_trueYStr, 20, yPos, RGB(255, 255, 140));
+    DrawString(&memDC, m_trueYStr, 20, yPos, RGB(255, 255, 140));
 
+    // 4. 将内存DC的内容一次性复制到屏幕DC
+    pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &memDC, 0, 0, SRCCOPY);
+
+    // 5. 清理资源
+    memDC.SelectObject(pOldMemBmp);
+    memBmp.DeleteObject();
+    memDC.DeleteDC();
     m_pStatic->ReleaseDC(pDC);
 }
 
@@ -246,18 +263,33 @@ void C7Segment::DrawHorizontal()
     CDC* pDC = m_pStatic->GetDC();
     CRect rect;
     m_pStatic->GetClientRect(&rect);
-    pDC->FillSolidRect(rect, RGB(50, 50, 50));  // 黑色背景
+    CDC memDC;
+    CBitmap memBmp;
+    memDC.CreateCompatibleDC(pDC);  // 创建与屏幕DC兼容的内存DC
+    // 创建与控件大小一致的位图（确保绘制范围匹配）
+    memBmp.CreateCompatibleBitmap(pDC, rect.Width(), rect.Height());
+    CBitmap* pOldMemBmp = memDC.SelectObject(&memBmp);  // 选入内存位图
+
+    // 3. 初始化内存DC背景（替代直接绘制到屏幕）
+    memDC.FillSolidRect(rect, RGB(50, 50, 50));  // 黑色背景，与原风格一致
 
     const int lineHeight = m_digitHeight + 15;
     int xPos = 20;
     int yPos = rect.Height() / 2 - lineHeight / 2;  // 垂直居中
 
     // 横向绘制三个方差值，间隔排列
-    DrawString(pDC, m_gpsVarianceStr, xPos, yPos, RGB(255, 70, 130));
+    DrawString(&memDC, m_gpsVarianceStr, xPos, yPos, RGB(255, 70, 130));
     xPos += 300;  // 横向偏移
-    DrawString(pDC, m_insVarianceStr, xPos, yPos, RGB(130, 255, 180));
+    DrawString(&memDC, m_insVarianceStr, xPos, yPos, RGB(130, 255, 180));
     xPos += 300;
-    DrawString(pDC, m_fuseVarianceStr, xPos, yPos, RGB(84, 181, 255));
+    DrawString(&memDC, m_fuseVarianceStr, xPos, yPos, RGB(84, 181, 255));
 
+    // 4. 将内存DC的内容一次性复制到屏幕DC
+    pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &memDC, 0, 0, SRCCOPY);
+
+    // 5. 清理资源
+    memDC.SelectObject(pOldMemBmp);
+    memBmp.DeleteObject();
+    memDC.DeleteDC();
     m_pStatic->ReleaseDC(pDC);
 }

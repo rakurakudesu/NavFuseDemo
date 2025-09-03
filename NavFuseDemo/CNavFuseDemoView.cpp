@@ -40,106 +40,110 @@ double x, y;
 void CNavFuseDemoView::OnDraw(CDC* pDC)
 {
     CDocument* pDoc = GetDocument();
-        // 1. 设置画笔和画刷
-        CPen tracePen(PS_SOLID, 3, RGB(255, 0, 0)); // 红色轨迹线
-        CPen* pOldPen = pDC->SelectObject(&tracePen);
-        CBrush startBrush(RGB(0, 255, 0));
-        CBrush* pOldBrush = pDC->SelectObject(&startBrush);
-        CRect rect;
-        GetClientRect(&rect);
-        pDC->FillSolidRect(rect, RGB(50, 50, 50));  // 黑色背景
-        //2. 绘制轨迹
-        if (!m_tracePoints.empty())
-        {
-            // 2.1 绘制起点
-            CPoint startPoint = m_tracePoints[0];
-            pDC->Ellipse(startPoint.x - 3, startPoint.y - 3,
-                startPoint.x + 3, startPoint.y + 3);
 
-            // 2.2 绘制连续线段
-            if (m_tracePoints.size() >= 2)
+    // 获取客户区大小
+    CRect clientRect;
+    GetClientRect(&clientRect);
+
+    // 1. 创建内存DC和兼容位图（双缓冲核心）
+    CDC memDC;          // 内存DC
+    CBitmap memBmp;     // 内存位图
+    memDC.CreateCompatibleDC(pDC);                          // 创建与屏幕DC兼容的内存DC
+    memBmp.CreateCompatibleBitmap(pDC, clientRect.Width(), clientRect.Height());  // 创建与客户区同大小的位图
+    CBitmap* pOldMemBmp = memDC.SelectObject(&memBmp);       // 将位图选入内存DC
+
+    // 2. 初始化内存DC（填充背景，避免黑色底色）
+    memDC.FillSolidRect(clientRect, RGB(50, 50, 50));  // 黑色背景
+
+    // 3. 所有绘制操作改用内存DC（memDC）
+    // 3.1 绘制真实轨迹
+    CPen tracePen(PS_SOLID, 3, RGB(255, 0, 0));
+    CPen* pOldPen = memDC.SelectObject(&tracePen);
+    CBrush startBrush(RGB(0, 255, 0));
+    CBrush* pOldBrush = memDC.SelectObject(&startBrush);
+
+    if (!m_tracePoints.empty())
+    {
+        // 绘制起点
+        CPoint startPoint = m_tracePoints[0];
+        memDC.Ellipse(startPoint.x - 3, startPoint.y - 3,
+            startPoint.x + 3, startPoint.y + 3);
+
+        // 绘制连续线段
+        if (m_tracePoints.size() >= 2)
+        {
+            memDC.MoveTo(m_tracePoints[0]);
+            for (size_t i = 1; i < m_tracePoints.size(); ++i)
             {
-                pDC->MoveTo(m_tracePoints[0]); // 移动到起点
-                for (size_t i = 1; i < m_tracePoints.size(); ++i)
-                {
-                    pDC->LineTo(m_tracePoints[i]); // 从上一点绘制到当前点
-                }
+                memDC.LineTo(m_tracePoints[i]);
             }
         }
+    }
+    memDC.SelectObject(pOldPen);
+    memDC.SelectObject(pOldBrush);
 
-        pDC->SelectObject(pOldPen);
-        pDC->SelectObject(pOldBrush);
-
-        // 1. 获取应用程序实例指针
-        CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
-        if (pApp == nullptr)
-            return;
-
-        // 2. 从应用程序类获取对话框指针
-        CNavFuseDemoDlg* pDlg = pApp->m_pMainDlg;
-        if (pDlg == nullptr)
-            return;
-
-        // 2. 绘制GPS轨迹
+    // 3.2 绘制GPS轨迹（同上，替换pDC为memDC）
+    CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
+    CNavFuseDemoDlg* pDlg = pApp ? pApp->m_pMainDlg : nullptr;
+    if (pDlg != nullptr)
+    {
         if (!m_gpsTracePoints.empty() && pDlg->is_GPS)
         {
-            // 设置GPS圆点画笔和画刷
             CPen gpsPen(PS_SOLID, 2, RGB(255, 255, 0));
-            CPen* pGpsOldPen = pDC->SelectObject(&gpsPen);
+            CPen* pGpsOldPen = memDC.SelectObject(&gpsPen);
             CBrush gpsBrush(RGB(0, 0, 255));
-            CBrush* pGpsOldBrush = pDC->SelectObject(&gpsBrush);
+            CBrush* pGpsOldBrush = memDC.SelectObject(&gpsBrush);
 
-            // 遍历所有GPS点，逐个绘制圆点
             for (const auto& gpsPoint : m_gpsTracePoints)
             {
-                // 绘制圆点
-                pDC->Ellipse(
-                    gpsPoint.x - 2,  // 左
-                    gpsPoint.y - 2,  // 上
-                    gpsPoint.x + 2,  // 右
-                    gpsPoint.y + 2   // 下
-                );
+                memDC.Ellipse(gpsPoint.x - 2, gpsPoint.y - 2,
+                    gpsPoint.x + 2, gpsPoint.y + 2);
             }
 
-            // 恢复画笔和画刷
-            pDC->SelectObject(pGpsOldPen);
-            pDC->SelectObject(pGpsOldBrush);
+            memDC.SelectObject(pGpsOldPen);
+            memDC.SelectObject(pGpsOldBrush);
         }
 
-        // 绘制INS连续轨迹
+        // 3.3 绘制INS轨迹（替换pDC为memDC）
         if (!m_insTracePoints.empty() && pDlg->is_INS)
         {
-            // 设置INS画笔
             CPen insPen(PS_SOLID, 2, RGB(100, 150, 100));
-            CPen* pOldInsPen = pDC->SelectObject(&insPen);
+            CPen* pOldInsPen = memDC.SelectObject(&insPen);
 
-            // 绘制连续线段
             if (m_insTracePoints.size() >= 2)
             {
-                pDC->MoveTo(m_insTracePoints[0]);  // 起点
+                memDC.MoveTo(m_insTracePoints[0]);
                 for (size_t i = 1; i < m_insTracePoints.size(); ++i)
                 {
-                    pDC->LineTo(m_insTracePoints[i]);  // 连续连接
+                    memDC.LineTo(m_insTracePoints[i]);
                 }
             }
 
-            // 恢复画笔
-            pDC->SelectObject(pOldInsPen);
+            memDC.SelectObject(pOldInsPen);
         }
 
+        // 3.4 绘制融合轨迹（替换pDC为memDC）
         if (!m_smoothedFuseTracePoints.empty() && pDlg->is_Filter)
         {
             CPen smoothPen(PS_SOLID, 3, RGB(0, 255, 255));
-            pOldPen = pDC->SelectObject(&smoothPen);
+            pOldPen = memDC.SelectObject(&smoothPen);
 
-            pDC->MoveTo(m_smoothedFuseTracePoints[0]);
+            memDC.MoveTo(m_smoothedFuseTracePoints[0]);
             for (size_t i = 1; i < m_smoothedFuseTracePoints.size(); ++i)
             {
-                pDC->LineTo(m_smoothedFuseTracePoints[i]);
+                memDC.LineTo(m_smoothedFuseTracePoints[i]);
             }
 
-            pDC->SelectObject(pOldPen);
+            memDC.SelectObject(pOldPen);
         }
+    }
+    // 4. 将内存DC的内容一次性复制到屏幕DC（关键步骤）
+    pDC->BitBlt(0, 0, clientRect.Width(), clientRect.Height(),
+        &memDC, 0, 0, SRCCOPY);
+    // 5. 清理资源
+    memDC.SelectObject(pOldMemBmp);
+    memBmp.DeleteObject();
+    memDC.DeleteDC();
 }
 
 // CNavFuseDemoView 诊断

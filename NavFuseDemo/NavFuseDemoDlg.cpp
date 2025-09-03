@@ -103,6 +103,9 @@ BEGIN_MESSAGE_MAP(CNavFuseDemoDlg, CDialogEx)
 	ON_BN_CLICKED(RADIO_add, &CNavFuseDemoDlg::OnBnClickedadd)
 	ON_BN_CLICKED(RADIO_fgps, &CNavFuseDemoDlg::OnBnClickedfgps)
 	ON_WM_TIMER()
+	ON_BN_CLICKED(IDC_START, &CNavFuseDemoDlg::OnBnClickedStart)
+	ON_BN_CLICKED(IDC_STOP, &CNavFuseDemoDlg::OnBnClickedStop)
+	ON_BN_CLICKED(IDC_REPLAY, &CNavFuseDemoDlg::OnBnClickedReplay)
 END_MESSAGE_MAP()
 
 
@@ -377,10 +380,51 @@ void CNavFuseDemoDlg::OnBnClickedfgps()
 
 void CNavFuseDemoDlg::OnTimer(UINT_PTR nIDEvent)
 {
-	// TODO: 在此添加消息处理程序代码和/或调用默认值
-	
+	if (nIDEvent == 2 && m_isReplaying && m_pview != nullptr)
+	{
+		// 检查是否回放完毕
+		if (m_replayIndex >= m_savedTrace.size())
+		{
+			KillTimer(2);
+			m_isReplaying = false;
+			m_replayIndex = 0;
 
-	CDialogEx::OnTimer(nIDEvent);
+			// 恢复按钮状态
+			GetDlgItem(IDC_START)->EnableWindow(TRUE);
+			GetDlgItem(IDC_STOP)->EnableWindow(FALSE);
+			GetDlgItem(IDC_REPLAY)->EnableWindow(!m_savedTrace.empty());
+			return;
+		}
+
+		// 更新视图中的轨迹点用于绘制
+		m_pview->m_tracePoints.clear();
+		m_pview->m_gpsTracePoints.clear();
+		m_pview->m_insTracePoints.clear();
+		m_pview->m_fuseTracePoints.clear();
+
+		// 添加当前回放位置之前的所有点
+		for (int i = 0; i <= m_replayIndex; i++)
+		{
+			if (i < m_savedTrace.size())
+				m_pview->m_tracePoints.push_back(m_savedTrace[i]);
+			if (i < m_savedGpsTrace.size())
+				m_pview->m_gpsTracePoints.push_back(m_savedGpsTrace[i]);
+			if (i < m_savedInsTrace.size())
+				m_pview->m_insTracePoints.push_back(m_savedInsTrace[i]);
+			if (i < m_savedFuseTrace.size())
+				m_pview->m_fuseTracePoints.push_back(m_savedFuseTrace[i]);
+		}
+
+		// 触发重绘
+		m_pview->Invalidate();
+
+		// 增加回放索引
+		m_replayIndex++;
+	}
+	else
+	{
+		CDialogEx::OnTimer(nIDEvent);
+	}
 }
 
 void CNavFuseDemoDlg::Update7Segment(double gpsX, double gpsY,
@@ -395,3 +439,84 @@ void CNavFuseDemoDlg::Update7Segment(double gpsX, double gpsY,
 	// 触发绘制（实时刷新）
 	m_p7Segment->Draw();
 }
+void CNavFuseDemoDlg::OnBnClickedStart()
+{
+	m_begin = TRUE;
+	if (!m_isRunning)
+	{
+		m_isRunning = true;
+		m_isReplaying = false;
+
+		// 启动定时器
+		SetTimer(1, Timer_speed, NULL);
+		if (m_pview != nullptr)
+		{
+			m_pview->SetTimer(1, Timer_speed, NULL);
+		}
+
+		// 更新按钮状态
+		GetDlgItem(IDC_START)->EnableWindow(FALSE);
+		GetDlgItem(IDC_STOP)->EnableWindow(TRUE);
+		GetDlgItem(IDC_REPLAY)->EnableWindow(FALSE);
+	}
+
+	// TODO: 在此添加控件通知处理程序代码
+}
+
+
+void CNavFuseDemoDlg::OnBnClickedStop()
+{
+
+	if (m_isRunning)
+	{
+		m_isRunning = false;
+
+		// 停止定时器
+		KillTimer(1);
+		if (m_pview != nullptr)
+		{
+			m_pview->KillTimer(1);
+		}
+
+		// 保存当前轨迹用于回放
+		if (m_pview != nullptr)
+		{
+			m_savedTrace = m_pview->m_tracePoints;
+			m_savedGpsTrace = m_pview->m_gpsTracePoints;
+			m_savedInsTrace = m_pview->m_insTracePoints;
+			m_savedFuseTrace = m_pview->m_fuseTracePoints;
+		}
+
+		// 更新按钮状态
+		GetDlgItem(IDC_START)->EnableWindow(TRUE);
+		GetDlgItem(IDC_STOP)->EnableWindow(FALSE);
+		GetDlgItem(IDC_REPLAY)->EnableWindow(!m_savedTrace.empty());
+	}
+	// TODO: 在此添加控件通知处理程序代码
+}
+
+
+void CNavFuseDemoDlg::OnBnClickedReplay()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if (!m_isReplaying && !m_savedTrace.empty())
+	{
+		m_isReplaying = true;
+		m_replayIndex = 0;
+
+		// 停止当前运行（如果正在运行）
+		if (m_isRunning)
+		{
+			OnBnClickedStop();
+		}
+
+		// 启动回放定时器
+		SetTimer(2, Timer_speed, NULL);
+
+		// 更新按钮状态
+		GetDlgItem(IDC_START)->EnableWindow(FALSE);
+		GetDlgItem(IDC_STOP)->EnableWindow(TRUE);
+		GetDlgItem(IDC_REPLAY)->EnableWindow(FALSE);
+	}
+}
+

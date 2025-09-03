@@ -68,5 +68,17 @@ public:
 	afx_msg void OnBnClickedadd();
 	afx_msg void OnBnClickedfgps();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnBnClickedStart();
+	bool m_begin = FALSE;
+	bool m_isRunning=FALSE;          // 标记是否正在运行
+	bool m_isReplaying=FALSE
+		;        // 标记是否在回放
+	std::vector<CPoint> m_savedTrace;      // 保存的真实轨迹
+	std::vector<CPoint> m_savedGpsTrace;   // 保存的GPS轨迹
+	std::vector<CPoint> m_savedInsTrace;   // 保存的INS轨迹
+	std::vector<CPoint> m_savedFuseTrace;  // 保存的融合轨迹
+	int m_replayIndex=0;         // 回放索引
+	afx_msg void OnBnClickedStop();
+	afx_msg void OnBnClickedReplay();
 };
 

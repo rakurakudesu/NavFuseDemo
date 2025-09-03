@@ -40,105 +40,104 @@ double x, y;
 void CNavFuseDemoView::OnDraw(CDC* pDC)
 {
     CDocument* pDoc = GetDocument();
+        // 1. 设置画笔和画刷
+        CPen tracePen(PS_SOLID, 3, RGB(255, 0, 0)); // 红色轨迹线
+        CPen* pOldPen = pDC->SelectObject(&tracePen);
+        CBrush startBrush(RGB(0, 255, 0));
+        CBrush* pOldBrush = pDC->SelectObject(&startBrush);
 
-    // 1. 设置画笔和画刷
-    CPen tracePen(PS_SOLID, 3, RGB(255, 0, 0)); // 红色轨迹线
-    CPen* pOldPen = pDC->SelectObject(&tracePen);
-    CBrush startBrush(RGB(0, 255, 0)); 
-    CBrush* pOldBrush = pDC->SelectObject(&startBrush);
-
-   //2. 绘制轨迹
-    if (!m_tracePoints.empty())
-    {
-        // 2.1 绘制起点
-        CPoint startPoint = m_tracePoints[0];
-        pDC->Ellipse(startPoint.x - 3, startPoint.y - 3,
-            startPoint.x + 3, startPoint.y + 3);
-
-        // 2.2 绘制连续线段
-        if (m_tracePoints.size() >= 2)
+        //2. 绘制轨迹
+        if (!m_tracePoints.empty())
         {
-            pDC->MoveTo(m_tracePoints[0]); // 移动到起点
-            for (size_t i = 1; i < m_tracePoints.size(); ++i)
+            // 2.1 绘制起点
+            CPoint startPoint = m_tracePoints[0];
+            pDC->Ellipse(startPoint.x - 3, startPoint.y - 3,
+                startPoint.x + 3, startPoint.y + 3);
+
+            // 2.2 绘制连续线段
+            if (m_tracePoints.size() >= 2)
             {
-                pDC->LineTo(m_tracePoints[i]); // 从上一点绘制到当前点
+                pDC->MoveTo(m_tracePoints[0]); // 移动到起点
+                for (size_t i = 1; i < m_tracePoints.size(); ++i)
+                {
+                    pDC->LineTo(m_tracePoints[i]); // 从上一点绘制到当前点
+                }
             }
-        }
-    }
-
-    pDC->SelectObject(pOldPen);
-    pDC->SelectObject(pOldBrush);
-
-    // 1. 获取应用程序实例指针
-    CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
-    if (pApp == nullptr)
-        return; 
-
-    // 2. 从应用程序类获取对话框指针
-    CNavFuseDemoDlg* pDlg = pApp->m_pMainDlg;
-    if (pDlg == nullptr)
-        return; 
-
-    // 2. 绘制GPS轨迹
-    if (!m_gpsTracePoints.empty() && pDlg->is_GPS)
-    {
-        // 设置GPS圆点画笔和画刷
-        CPen gpsPen(PS_SOLID, 2, RGB(0, 0, 255));
-        CPen* pGpsOldPen = pDC->SelectObject(&gpsPen);
-        CBrush gpsBrush(RGB(0, 0, 255));
-        CBrush* pGpsOldBrush = pDC->SelectObject(&gpsBrush);
-
-        // 遍历所有GPS点，逐个绘制圆点
-        for (const auto& gpsPoint : m_gpsTracePoints)
-        {
-            // 绘制圆点
-            pDC->Ellipse(
-                gpsPoint.x - 2,  // 左
-                gpsPoint.y - 2,  // 上
-                gpsPoint.x + 2,  // 右
-                gpsPoint.y + 2   // 下
-            );
-        }
-
-        // 恢复画笔和画刷
-        pDC->SelectObject(pGpsOldPen);
-        pDC->SelectObject(pGpsOldBrush);
-    }
-    
-    // 绘制INS连续轨迹
-    if (!m_insTracePoints.empty() && pDlg->is_INS)
-    {
-        // 设置INS画笔
-        CPen insPen(PS_SOLID, 2, RGB(100, 150, 100));  
-        CPen* pOldInsPen = pDC->SelectObject(&insPen);
-
-        // 绘制连续线段
-        if (m_insTracePoints.size() >= 2)
-        {
-            pDC->MoveTo(m_insTracePoints[0]);  // 起点
-            for (size_t i = 1; i < m_insTracePoints.size(); ++i)
-            {
-               pDC->LineTo(m_insTracePoints[i]);  // 连续连接
-            }
-        }
-
-        // 恢复画笔
-        pDC->SelectObject(pOldInsPen);
-    }
-
-    if (!m_smoothedFuseTracePoints.empty() && pDlg->is_Filter)
-    {
-        CPen smoothPen(PS_SOLID, 3, RGB(0, 255, 255));
-        pOldPen = pDC->SelectObject(&smoothPen);
-
-        pDC->MoveTo(m_smoothedFuseTracePoints[0]);
-        for (size_t i = 1; i < m_smoothedFuseTracePoints.size(); ++i)
-        {
-            pDC->LineTo(m_smoothedFuseTracePoints[i]);
         }
 
         pDC->SelectObject(pOldPen);
-    }
+        pDC->SelectObject(pOldBrush);
+
+        // 1. 获取应用程序实例指针
+        CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
+        if (pApp == nullptr)
+            return;
+
+        // 2. 从应用程序类获取对话框指针
+        CNavFuseDemoDlg* pDlg = pApp->m_pMainDlg;
+        if (pDlg == nullptr)
+            return;
+
+        // 2. 绘制GPS轨迹
+        if (!m_gpsTracePoints.empty() && pDlg->is_GPS)
+        {
+            // 设置GPS圆点画笔和画刷
+            CPen gpsPen(PS_SOLID, 2, RGB(0, 0, 255));
+            CPen* pGpsOldPen = pDC->SelectObject(&gpsPen);
+            CBrush gpsBrush(RGB(0, 0, 255));
+            CBrush* pGpsOldBrush = pDC->SelectObject(&gpsBrush);
+
+            // 遍历所有GPS点，逐个绘制圆点
+            for (const auto& gpsPoint : m_gpsTracePoints)
+            {
+                // 绘制圆点
+                pDC->Ellipse(
+                    gpsPoint.x - 2,  // 左
+                    gpsPoint.y - 2,  // 上
+                    gpsPoint.x + 2,  // 右
+                    gpsPoint.y + 2   // 下
+                );
+            }
+
+            // 恢复画笔和画刷
+            pDC->SelectObject(pGpsOldPen);
+            pDC->SelectObject(pGpsOldBrush);
+        }
+
+        // 绘制INS连续轨迹
+        if (!m_insTracePoints.empty() && pDlg->is_INS)
+        {
+            // 设置INS画笔
+            CPen insPen(PS_SOLID, 2, RGB(100, 150, 100));
+            CPen* pOldInsPen = pDC->SelectObject(&insPen);
+
+            // 绘制连续线段
+            if (m_insTracePoints.size() >= 2)
+            {
+                pDC->MoveTo(m_insTracePoints[0]);  // 起点
+                for (size_t i = 1; i < m_insTracePoints.size(); ++i)
+                {
+                    pDC->LineTo(m_insTracePoints[i]);  // 连续连接
+                }
+            }
+
+            // 恢复画笔
+            pDC->SelectObject(pOldInsPen);
+        }
+
+        if (!m_smoothedFuseTracePoints.empty() && pDlg->is_Filter)
+        {
+            CPen smoothPen(PS_SOLID, 3, RGB(0, 255, 255));
+            pOldPen = pDC->SelectObject(&smoothPen);
+
+            pDC->MoveTo(m_smoothedFuseTracePoints[0]);
+            for (size_t i = 1; i < m_smoothedFuseTracePoints.size(); ++i)
+            {
+                pDC->LineTo(m_smoothedFuseTracePoints[i]);
+            }
+
+            pDC->SelectObject(pOldPen);
+        }
 }
 
 // CNavFuseDemoView 诊断
@@ -168,8 +167,8 @@ void CNavFuseDemoView::OnInitialUpdate()
     double initialInsFreq = (pDlg != nullptr) ? pDlg ->INS_Freq : 50;
     double initialInsAcc = (pDlg != nullptr) ? pDlg->INS_ACC : 10.0;
     double initialInsDrift = (pDlg != nullptr) ? pDlg->INS_Drift : 0.02;
-
     // 使用初始间隔设置定时器
+    if(m_begin==TRUE)
     SetTimer(1, initialSpeed, NULL);
 
     // 设置运动模式以及对应的参数
@@ -234,7 +233,11 @@ double currentTime = 2;
 void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-
+    if (m_isReplaying)
+    {
+        CView::OnTimer(nIDEvent);
+        return;
+    }
     double dt = 0.01;
     m_mot.UpdateTruePos(dt); // 更新运动模型的真实位置
     currentTime += dt;

@@ -22,7 +22,7 @@ public:
 	double paramA = 200.0;
 	double paramS = 200.0;
 	double gpsX, gpsY; // GPS模拟坐标
-	double insX, insY;  // INS模拟坐标
+	double insX, insY=300;  // INS模拟坐标
 	bool m_isFirstDraw = true;
 	CDataFusion m_fusion;
 	CGPS gps;
@@ -34,7 +34,10 @@ public:
 	std::vector<CPoint> m_smoothedFuseTracePoints;  // 平滑后的融合轨迹
 	static const int SMOOTH_WINDOW_SIZE = 5;        // 平滑窗口大小
 	CPoint SmoothPoint(const std::vector<CPoint>& points, int index);  // 计算平滑点
-
+	bool IsReplaying() const { return m_isReplaying; }
+	void SetReplaying(bool replaying) { m_isReplaying = replaying; }
+	bool m_begin;
+	bool m_isReplaying;
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 #ifndef _WIN32_WCE

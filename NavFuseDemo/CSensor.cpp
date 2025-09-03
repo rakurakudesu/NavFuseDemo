@@ -24,8 +24,8 @@ bool CGPS::GenerateData(double currentTime, double trueX, double trueY, double& 
     return true; 
 }
 CINS::CINS() : m_lastTrueX(0), m_lastTrueY(0), m_lastVelX(0), m_lastVelY(0),
-m_accX(0), m_accY(0), m_velX(0), m_velY(0), m_posX(0), m_posY(0),
-m_driftX(0), m_driftY(0), m_driftRate(0.01) 
+m_accX(0), m_accY(0), m_velX(0), m_velY(0), m_posX(0), m_posY(0),  // m_posY初始为0
+m_driftX(0), m_driftY(0), m_driftRate(0.01)  // m_driftY初始为0（无初始漂移）
 {
 }
 bool CINS::GenerateData(double currentTime, double trueX, double trueY, double& simX, double& simY) {

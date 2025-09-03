@@ -31,4 +31,5 @@ public:
 	afx_msg void OnEnChangeLinespeed();
 	afx_msg void OnEnChangeArcradius();
 	afx_msg void OnEnChangeAm();
+
 };

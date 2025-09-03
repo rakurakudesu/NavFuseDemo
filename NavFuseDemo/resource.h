@@ -22,8 +22,10 @@
 #define AFX_IDC_FONTNAMES               1001
 #define IDC_BUTTON2                     1002
 #define AFX_IDC_FONTSTYLES              1002
+#define IDC_STOP                        1002
 #define IDC_BUTTON3                     1003
 #define AFX_IDC_FONTSIZES               1003
+#define IDC_REPLAY                      1003
 #define IDC_DRAW                        1004
 #define AFX_IDC_STRIKEOUT               1004
 #define AFX_IDC_UNDERLINE               1005
@@ -49,6 +51,8 @@
 #define RADIO_fgps                      1027
 #define Segament                        1028
 #define Segament2                       1029
+#define IDC_BUTTON1                     1030
+#define IDC_START                       1030
 #define AFX_IDC_COLOR_BLACK             1100
 #define AFX_IDC_COLOR_WHITE             1101
 #define AFX_IDC_COLOR_RED               1102
@@ -562,7 +566,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         32777
-#define _APS_NEXT_CONTROL_VALUE         1030
+#define _APS_NEXT_CONTROL_VALUE         1031
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

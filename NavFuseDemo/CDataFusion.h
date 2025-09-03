@@ -42,7 +42,7 @@ public:
      * @return 无
      * @调用场景：对话框OnTimer中，FuseData之前调用
      */
-    void CalcSensorMSE(double trueX, double trueY, double gpsX, double gpsY, double insX, double insY);
+    void CalcSensorMSE(double trueX, double trueY, double gpsX, double gpsY, double insX, double insY,double &gpsmse,double &insmse);
 
     /**
      * @brief 执行数据融合，核心接口，调用对应算法
@@ -56,7 +56,7 @@ public:
     void CDataFusion::FuseData(double trueX, double trueY,
         double gpsX, double gpsY,
         double insX, double insY,
-        double& fuseX, double& fuseY);
+        double& fuseX, double& fuseY,double & fusemse);
 
     /**
      * @brief 获取各数据的MSE，用于界面显示

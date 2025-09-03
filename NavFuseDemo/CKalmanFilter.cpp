@@ -18,7 +18,8 @@ void CKalmanFilter::SetParam(Eigen::MatrixXd F, Eigen::MatrixXd H, Eigen::Matrix
     m_R = R;
 }
 
-void CKalmanFilter::Init(const Eigen::VectorXd& initialState, const Eigen::MatrixXd& initialP) {
+void CKalmanFilter::Init(const Eigen::VectorXd& initialState, const Eigen::MatrixXd& initialP) 
+{
     m_x = initialState;
     m_P = initialP;
 }

@@ -28,7 +28,8 @@ m_accX(0), m_accY(0), m_velX(0), m_velY(0), m_posX(0), m_posY(0),  // m_posY初始
 m_driftX(0), m_driftY(0), m_driftRate(0.01)  // m_driftY初始为0（无初始漂移）
 {
 }
-bool CINS::GenerateData(double currentTime, double trueX, double trueY, double& simX, double& simY) {
+bool CINS::GenerateData(double currentTime, double trueX, double trueY, double& simX, double& simY)
+{
     double dt = (currentTime - m_lastTime);  // 时间增量（积分步长）
     if (dt < 1.0 / m_freq) {
         return false;  // 未到采样时间

@@ -23,6 +23,7 @@ public:
 	double paramS = 200.0;
 	double gpsX, gpsY; // GPS模拟坐标
 	double insX, insY=300;  // INS模拟坐标
+	double fuseX, fuseY;
 	bool m_isFirstDraw = true;
 	CDataFusion m_fusion;
 	CGPS gps;

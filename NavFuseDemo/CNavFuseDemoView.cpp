@@ -45,7 +45,9 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
         CPen* pOldPen = pDC->SelectObject(&tracePen);
         CBrush startBrush(RGB(0, 255, 0));
         CBrush* pOldBrush = pDC->SelectObject(&startBrush);
-
+        CRect rect;
+        GetClientRect(&rect);
+        pDC->FillSolidRect(rect, RGB(50, 50, 50));  // 黑色背景
         //2. 绘制轨迹
         if (!m_tracePoints.empty())
         {
@@ -82,7 +84,7 @@ void CNavFuseDemoView::OnDraw(CDC* pDC)
         if (!m_gpsTracePoints.empty() && pDlg->is_GPS)
         {
             // 设置GPS圆点画笔和画刷
-            CPen gpsPen(PS_SOLID, 2, RGB(0, 0, 255));
+            CPen gpsPen(PS_SOLID, 2, RGB(255, 255, 0));
             CPen* pGpsOldPen = pDC->SelectObject(&gpsPen);
             CBrush gpsBrush(RGB(0, 0, 255));
             CBrush* pGpsOldBrush = pDC->SelectObject(&gpsBrush);
@@ -177,7 +179,7 @@ void CNavFuseDemoView::OnInitialUpdate()
     case CMotionModel::LINE:  
         m_mot.SetMotionParam(m_mot.m_type, paramL); break;
     case CMotionModel::ARC:
-        m_mot.SetMotionParam(m_mot.m_type, paramA, 10); break;
+        m_mot.SetMotionParam(m_mot.m_type, paramA, 1); break;
     case CMotionModel::S_CURVE:
         m_mot.SetMotionParam(m_mot.m_type, paramS); break;
 
@@ -290,7 +292,6 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
         m_insTracePoints.push_back(CPoint(insDrawX, insDrawY)); 
     }
 
-    double fuseX, fuseY;  // 融合后的坐标
     // 6.1 计算传感器MSE（用于加权融合的权重计算）
     m_fusion.CalcSensorMSE(currentX, currentY, gpsX, gpsY, insX, insY);
 
@@ -320,7 +321,7 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
         int distance = (int)sqrt(dx * dx + dy * dy);  // 欧氏距离
 
         // 仅保留距离小于阈值的点（如10单位，可调整）
-        if (distance < 120) {
+        if (distance < 1200) {
             int fuseDrawX = max(0, min((int)(fuseX + 0.5), clientRect.right - 1));
             int fuseDrawY = max(0, min((int)(fuseY + 0.5), clientRect.bottom - 1));
             m_fuseTracePoints.push_back(CPoint(fuseDrawX, fuseDrawY));
@@ -388,7 +389,8 @@ void CNavFuseDemoView::ResetTrace()
     m_mot.GetTruePos(initX, initY);
     m_lastX = initX;
     m_lastY = initY;
-
+    fuseX = initX;
+    fuseY = initY;
     // 3. 重置卡尔曼滤波器初始状态（基于运动模型初始位置）
     Eigen::VectorXd initialState(6);
     initialState << 0.0, 0.0, 0.0, 300.0, 0.0, 0.0;  // [x, vx, ax, y, vy, ay]

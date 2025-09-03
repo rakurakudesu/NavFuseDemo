@@ -19,24 +19,26 @@ const bool C7Segment::digitSegments[10][7] =
 C7Segment::C7Segment(CStatic* pStatic)
     : m_pStatic(pStatic), m_digitWidth(30), m_digitHeight(50)
 {
-    // 初始化显示字符串（修正重复初始化问题）
+    // 初始化显示字符串
     m_gpsXStr = _T("GPS X:0.00");
     m_gpsYStr = _T("GPS Y:0.00");
     m_insXStr = _T("INS X:0.00");
     m_insYStr = _T("INS Y:0.00");
     m_fuseXStr = _T("FUSE X:0.00");
     m_fuseYStr = _T("FUSE Y:0.00");
-    m_trueXStr = _T("TRUE X:0.00");  // 新增：真实坐标初始化
+    m_trueXStr = _T("TRUE X:0.00");  
     m_trueYStr = _T("TRUE Y:0.00");
 }
 
 C7Segment::~C7Segment() {}
 
-// 新增真实坐标参数处理
+// 真实坐标参数处理
 void C7Segment::SetValues(double gpsX, double gpsY,
     double insX, double insY,
     double fuseX, double fuseY,
-    double trueX, double trueY) {  // 新增真实坐标参数
+    double trueX, double trueY) 
+{  
+    // 真实坐标参数
     int intPart, decPart;
 
     // 格式化GPS数据
@@ -77,27 +79,27 @@ void C7Segment::Draw() {
     const int lineHeight = m_digitHeight + 15;  // 优化行间距
 
     // 绘制GPS数据（红色）
-    DrawString(pDC, m_gpsXStr, 20, yPos, RGB(255, 0, 0));
+    DrawString(pDC, m_gpsXStr, 20, yPos, RGB(255, 70, 130));
     yPos += lineHeight;
-    DrawString(pDC, m_gpsYStr, 20, yPos, RGB(255, 0, 0));
+    DrawString(pDC, m_gpsYStr, 20, yPos, RGB(255, 70, 130));
     yPos += lineHeight;
 
     // 绘制INS数据（绿色）
-    DrawString(pDC, m_insXStr, 20, yPos, RGB(0, 255, 0));
+    DrawString(pDC, m_insXStr, 20, yPos, RGB(130, 255, 180));
     yPos += lineHeight;
-    DrawString(pDC, m_insYStr, 20, yPos, RGB(0, 255, 0));
+    DrawString(pDC, m_insYStr, 20, yPos, RGB(130, 255, 180));
     yPos += lineHeight;
 
     // 绘制融合数据（蓝色）
-    DrawString(pDC, m_fuseXStr, 20, yPos, RGB(0, 0, 255));
+    DrawString(pDC, m_fuseXStr, 20, yPos, RGB(84, 181, 255));
     yPos += lineHeight;
-    DrawString(pDC, m_fuseYStr, 20, yPos, RGB(0, 0, 255));
+    DrawString(pDC, m_fuseYStr, 20, yPos, RGB(84, 181, 255));
     yPos += lineHeight;
 
-    // 新增：绘制真实坐标数据（黄色，与其他数据区分）
-    DrawString(pDC, m_trueXStr, 20, yPos, RGB(200, 200, 0));
+    // 绘制真实坐标数据（黄色）
+    DrawString(pDC, m_trueXStr, 20, yPos, RGB(255, 255, 140));
     yPos += lineHeight;
-    DrawString(pDC, m_trueYStr, 20, yPos, RGB(255, 255, 0));
+    DrawString(pDC, m_trueYStr, 20, yPos, RGB(255, 255, 140));
 
     m_pStatic->ReleaseDC(pDC);
 }
@@ -105,7 +107,7 @@ void C7Segment::Draw() {
 void C7Segment::DrawString(CDC* pDC, const CString& str, int x, int y, COLORREF color) {
     int currentX = x;
 
-    // 绘制标识文本（优化字体大小）
+    // 绘制标识文本
     CFont font;
     font.CreatePointFont(100, _T("SimHei"));  // 稍小字体避免拥挤
     CFont* pOldFont = pDC->SelectObject(&font);
@@ -146,7 +148,7 @@ void C7Segment::DrawDigit(CDC* pDC, int x, int y, int d, bool showDot, COLORREF 
     // 优化比例：更协调的宽高比和线段长度
     int w = m_digitWidth;    // 30px
     int h = m_digitHeight;   // 50px
-    int segLen = w - 8;      // 段长度（两侧留边4px）
+    int segLen = w - 8;      // 段长度
     int midY = y + h / 2;    // 中间线Y坐标
     const bool* segments = digitSegments[d];
 
@@ -228,4 +230,34 @@ void C7Segment::SplitNumber(double val, int& intPart, int& decPart) {
     if (isNegative) {
         intPart = -intPart;
     }
+}
+
+void C7Segment::SetVarianceValues(double gpsVariance, double insVariance, double fuseVariance)
+{
+    m_gpsVarianceStr.Format(_T("GPS: %.2f"), gpsVariance);
+    m_insVarianceStr.Format(_T("INS: %.2f"), insVariance);
+    m_fuseVarianceStr.Format(_T("FUSE: %.2f"), fuseVariance);
+}
+
+void C7Segment::DrawHorizontal()
+{
+    if (!m_pStatic) return;
+
+    CDC* pDC = m_pStatic->GetDC();
+    CRect rect;
+    m_pStatic->GetClientRect(&rect);
+    pDC->FillSolidRect(rect, RGB(50, 50, 50));  // 黑色背景
+
+    const int lineHeight = m_digitHeight + 15;
+    int xPos = 20;
+    int yPos = rect.Height() / 2 - lineHeight / 2;  // 垂直居中
+
+    // 横向绘制三个方差值，间隔排列
+    DrawString(pDC, m_gpsVarianceStr, xPos, yPos, RGB(255, 70, 130));
+    xPos += 300;  // 横向偏移
+    DrawString(pDC, m_insVarianceStr, xPos, yPos, RGB(130, 255, 180));
+    xPos += 300;
+    DrawString(pDC, m_fuseVarianceStr, xPos, yPos, RGB(84, 181, 255));
+
+    m_pStatic->ReleaseDC(pDC);
 }

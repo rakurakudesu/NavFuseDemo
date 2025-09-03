@@ -48,7 +48,9 @@ public:
 	afx_msg void OnMenuMotion(); 
 	BOOL is_GPS;
 	BOOL is_INS;
+	BOOL is_Filter;
 	CMenu m_Menu;
+
 	int Timer_speed = 50;
 	double edit_step;
 	double GPS_Freq;
@@ -56,14 +58,18 @@ public:
 	double INS_Freq;
 	double INS_ACC;
 	double INS_Drift;
+
 	CDataFusion::AlgType FuseType;
-	afx_msg void OnBnClickedFilter();
-	BOOL is_Filter;
 	C7Segment* m_p7Segment;
+	C7Segment* m_pVariance7Segment;  // 方差显示数码管
+
 	void Update7Segment(double gpsX, double gpsY,
 		double insX, double insY,
 		double fuseX, double fuseY,
 		double trueX, double trueY);
+	void UpdateVariance7Segment(double gpsVar, double insVar, double fuseVar);
+
+	afx_msg void OnBnClickedFilter();
 	afx_msg void OnBnClickedkal();
 	afx_msg void OnBnClickedadd();
 	afx_msg void OnBnClickedfgps();

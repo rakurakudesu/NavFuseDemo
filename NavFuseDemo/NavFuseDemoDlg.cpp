@@ -121,7 +121,11 @@ BOOL CNavFuseDemoDlg::OnInitDialog()  //对话框初始化
 	{
 		m_p7Segment = new C7Segment(pStatic7Seg);
 	}
-
+	CStatic* pStaticVariance = (CStatic*)GetDlgItem(Variance_show);
+	if (pStaticVariance != nullptr)
+	{
+		m_pVariance7Segment = new C7Segment(pStaticVariance);
+	}
 	// 将“关于...”菜单项添加到系统菜单中。
 	m_Menu.LoadMenu(MENU1);  //添加菜单到主对话框
 	SetMenu(&m_Menu);
@@ -438,6 +442,15 @@ void CNavFuseDemoDlg::Update7Segment(double gpsX, double gpsY,
 	m_p7Segment->SetValues(gpsX, gpsY, insX, insY, fuseX, fuseY, trueX, trueY);
 	// 触发绘制（实时刷新）
 	m_p7Segment->Draw();
+}
+
+void CNavFuseDemoDlg::UpdateVariance7Segment(double gpsVar, double insVar, double fuseVar)
+{
+	if (m_pVariance7Segment != nullptr)
+	{
+		m_pVariance7Segment->SetVarianceValues(gpsVar, insVar, fuseVar);
+		m_pVariance7Segment->DrawHorizontal();
+	}
 }
 void CNavFuseDemoDlg::OnBnClickedStart()
 {

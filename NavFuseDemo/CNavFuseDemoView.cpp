@@ -330,6 +330,15 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
     {
         pDlg->Update7Segment(gpsX, gpsY, insX, insY, fuseX, fuseY, currentX, currentY);
     }
+
+    double gpsMSE, insMSE, fuseMSE;
+    m_fusion.GetMSE(gpsMSE, insMSE, fuseMSE);
+    // 传递给对话框更新显示
+    if (pDlg != nullptr)
+    {
+        pDlg->UpdateVariance7Segment(gpsMSE, insMSE, fuseMSE);
+    }
+
     // 6.5 计算平滑后的融合轨迹
     if (!m_fuseTracePoints.empty())
     {

@@ -32,6 +32,7 @@ CMotionModel m_mot;
 CGPS gps;
 CINS ins;
 CKalmanFilter kalman;
+double gpsmse = 0, insmse = 0,fusemse = 0;
 
 double simx, simy;
 double x, y;
@@ -292,7 +293,7 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
 
     double fuseX, fuseY;  // 融合后的坐标
     // 6.1 计算传感器MSE（用于加权融合的权重计算）
-    m_fusion.CalcSensorMSE(currentX, currentY, gpsX, gpsY, insX, insY);
+    m_fusion.CalcSensorMSE(currentX, currentY, gpsX, gpsY, insX, insY,gpsmse,insmse);
 
     // 6.2 从对话框获取当前选择的融合算法（如卡尔曼、加权等）
     CNavFuseDemoApp* pApp = (CNavFuseDemoApp*)AfxGetApp();
@@ -303,7 +304,7 @@ void CNavFuseDemoView::OnTimer(UINT_PTR nIDEvent)
     }
 
     // 6.3 执行融合
-    m_fusion.FuseData(currentX, currentY, gpsX, gpsY, insX, insY, fuseX, fuseY);
+    m_fusion.FuseData(currentX, currentY, gpsX, gpsY, insX, insY, fuseX, fuseY,fusemse);
 
     // 6.4 存储融合轨迹
     if (m_fuseTracePoints.empty()) {

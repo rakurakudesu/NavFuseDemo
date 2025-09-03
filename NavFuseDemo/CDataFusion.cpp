@@ -31,21 +31,22 @@ void CDataFusion::SetAlgorithm(AlgType alg) {
     m_alg = alg;
 }
 
-void CDataFusion::CalcSensorMSE(double trueX, double trueY, double gpsX, double gpsY, double insX, double insY, double& gpsmse, double &insmse) 
+void CDataFusion::CalcSensorMSE(double trueX, double trueY, double gpsX, double gpsY, double insX, double insY) 
 {
     double gpsErrX = gpsX - trueX;
     double gpsErrY = gpsY - trueY;
-    gpsmse += (gpsErrX * gpsErrX + gpsErrY * gpsErrY) / 2.0;
+    m_gpsMSE = (gpsErrX * gpsErrX + gpsErrY * gpsErrY) / 2.0;
 
     double insErrX = insX - trueX;
     double insErrY = insY - trueY;
-    insmse += (insErrX * insErrX + insErrY * insErrY) / 2.0;
+    m_insMSE = (insErrX * insErrX + insErrY * insErrY) / 2.0;
 }
 
 void CDataFusion::FuseData(double trueX, double trueY,
     double gpsX, double gpsY,
     double insX, double insY,
-    double& fuseX, double& fuseY,double & fusemse) {
+    double& fuseX, double& fuseY) 
+{
     switch (m_alg) {
     case KALMAN:
         KalmanFusion(gpsX, gpsY, insX, insY, 0.01, fuseX, fuseY);
@@ -63,7 +64,7 @@ void CDataFusion::FuseData(double trueX, double trueY,
 
     double fuseErrX = fuseX - trueX;
     double fuseErrY = fuseY - trueY;
-    fusemse += (fuseErrX * fuseErrX + fuseErrY * fuseErrY) / 2.0;
+    m_fuseMSE = (fuseErrX * fuseErrX + fuseErrY * fuseErrY) / 2.0;
 }
 
 void CDataFusion::GetMSE(double& gpsMSE, double& insMSE, double& fuseMSE) {
